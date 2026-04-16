@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { apiGet, apiPost } from '../../../../lib/api';
+import { apiGet, apiPost, apiPut } from '../../../../lib/api';
 import { readToken } from '../../../../lib/session';
 import { ProtectedView } from '../../../../components/ProtectedView';
 
@@ -21,6 +21,7 @@ export default function DossierDetailPage() {
   const [dossier, setDossier] = useState(null);
   const [error, setError] = useState('');
   const [status, setStatus] = useState('');
+  const [workflowComment, setWorkflowComment] = useState('');
   const [attachment, setAttachment] = useState({
     documentType: 'piece-identite',
     storageKey: '',
@@ -52,6 +53,18 @@ export default function DossierDetailPage() {
     return parsePayload(dossier.events[0].payloadJson);
   }, [dossier]);
 
+  async function submitDraft() {
+    const token = readToken();
+    if (!token || !reference) return;
+    try {
+      await apiPost('/api/dossiers/' + encodeURIComponent(reference) + '/submit', { comment: 'Soumission depuis l interface citoyenne' }, token);
+      setStatus('Brouillon soumis avec succes.');
+      await load();
+    } catch (error) {
+      setStatus('Soumission impossible.');
+    }
+  }
+
   async function moveToNextStep() {
     const token = readToken();
     if (!token || !reference) return;
@@ -61,6 +74,20 @@ export default function DossierDetailPage() {
       await load();
     } catch (error) {
       setStatus('Transition impossible.');
+    }
+  }
+
+  async function addComment(event) {
+    event.preventDefault();
+    const token = readToken();
+    if (!token || !reference || !workflowComment) return;
+    try {
+      await apiPost('/api/dossiers/' + encodeURIComponent(reference) + '/comments', { comment: workflowComment }, token);
+      setWorkflowComment('');
+      setStatus('Commentaire workflow ajoute.');
+      await load();
+    } catch (error) {
+      setStatus('Ajout du commentaire impossible.');
     }
   }
 
@@ -78,6 +105,18 @@ export default function DossierDetailPage() {
     }
   }
 
+  async function updateDocumentStatus(documentId, validationStatus) {
+    const token = readToken();
+    if (!token || !reference) return;
+    try {
+      await apiPut('/api/dossiers/' + encodeURIComponent(reference) + '/attachments/' + encodeURIComponent(documentId) + '/status', { validationStatus }, token);
+      setStatus('Statut documentaire mis a jour.');
+      await load();
+    } catch (error) {
+      setStatus('Mise a jour du statut documentaire impossible.');
+    }
+  }
+
   return (
     <ProtectedView>
       <main style={{ background: '#f8fafc', minHeight: '100vh', padding: '32px 20px' }}>
@@ -85,7 +124,7 @@ export default function DossierDetailPage() {
           <div>
             <h1 style={{ fontSize: 38, marginBottom: 8 }}>Detail dossier</h1>
             <p style={{ color: '#475569', lineHeight: 1.7 }}>
-              Cette page lit les donnees persistées du dossier, parse le payload metier et expose des actions de workflow et de pieces jointes.
+              Cette page lit les donnees persistées du dossier, parse le payload metier et expose des actions de soumission, workflow, commentaires et pieces jointes.
             </p>
           </div>
 
@@ -104,9 +143,14 @@ export default function DossierDetailPage() {
                   <div><strong>Prochaine etape :</strong> {dossier.nextStep || 'N/A'}</div>
                   <div><strong>Service :</strong> {dossier.service}</div>
                 </div>
-                <button onClick={moveToNextStep} style={{ marginTop: 16, background: '#1d4ed8', color: '#fff', border: 'none', padding: '12px 16px', borderRadius: 10 }}>
-                  Passer a l etape suivante
-                </button>
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 16 }}>
+                  <button onClick={submitDraft} style={{ background: '#0f766e', color: '#fff', border: 'none', padding: '12px 16px', borderRadius: 10 }}>
+                    Soumettre le brouillon
+                  </button>
+                  <button onClick={moveToNextStep} style={{ background: '#1d4ed8', color: '#fff', border: 'none', padding: '12px 16px', borderRadius: 10 }}>
+                    Passer a l etape suivante
+                  </button>
+                </div>
               </section>
 
               <section style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 18, padding: 24 }}>
@@ -126,6 +170,16 @@ export default function DossierDetailPage() {
               </section>
 
               <section style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 18, padding: 24 }}>
+                <h2 style={{ marginTop: 0 }}>Commentaire workflow</h2>
+                <form onSubmit={addComment} style={{ display: 'grid', gap: 12 }}>
+                  <textarea placeholder='Ajouter un commentaire de traitement ou de suivi' value={workflowComment} onChange={(e) => setWorkflowComment(e.target.value)} style={{ minHeight: 120, padding: 12, borderRadius: 10, border: '1px solid #cbd5e1' }} />
+                  <button type='submit' style={{ background: '#1d4ed8', color: '#fff', border: 'none', padding: '12px 16px', borderRadius: 10 }}>
+                    Ajouter le commentaire
+                  </button>
+                </form>
+              </section>
+
+              <section style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 18, padding: 24 }}>
                 <h2 style={{ marginTop: 0 }}>Pieces jointes</h2>
                 <div style={{ display: 'grid', gap: 12 }}>
                   {(dossier.documents || []).map((document, index) => (
@@ -133,6 +187,15 @@ export default function DossierDetailPage() {
                       <div><strong>{document.originalFilename}</strong></div>
                       <div style={{ color: '#64748b', marginTop: 4 }}>{document.documentType}</div>
                       <div style={{ color: '#64748b', marginTop: 4 }}>{document.mimeType}</div>
+                      <div style={{ color: '#334155', marginTop: 4 }}>Statut documentaire : {document.validationStatus || 'PENDING'}</div>
+                      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 10 }}>
+                        <button onClick={() => updateDocumentStatus(document.id, 'APPROVED')} style={{ background: '#0f766e', color: '#fff', border: 'none', padding: '10px 12px', borderRadius: 8 }}>
+                          Marquer approuve
+                        </button>
+                        <button onClick={() => updateDocumentStatus(document.id, 'REJECTED')} style={{ background: '#b91c1c', color: '#fff', border: 'none', padding: '10px 12px', borderRadius: 8 }}>
+                          Marquer rejete
+                        </button>
+                      </div>
                     </article>
                   ))}
                 </div>
