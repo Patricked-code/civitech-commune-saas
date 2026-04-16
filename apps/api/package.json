@@ -1,6 +1,6 @@
 {
   "name": "civitech-commune-api",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": true,
   "main": "server.js",
   "scripts": {
@@ -8,10 +8,10 @@
     "start": "node server.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:seed": "node prisma/seed.js"
+    "prisma:seed": "node prisma/seed-secure.js"
   },
   "prisma": {
-    "seed": "node prisma/seed.js"
+    "seed": "node prisma/seed-secure.js"
   },
   "dependencies": {
     "@prisma/client": "5.20.0",
