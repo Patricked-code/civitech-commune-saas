@@ -12,6 +12,8 @@ export default function AdminGestionPage() {
   const [error, setError] = useState('');
   const [userForm, setUserForm] = useState({ email: '', firstName: '', lastName: '', password: 'demo1234', userType: 'citizen', roleCodes: ['citizen'] });
   const [procedureForm, setProcedureForm] = useState({ code: '', title: '', category: 'Etat civil', feeAmount: '0', estimatedDelayDays: '3' });
+  const [editingUserEmail, setEditingUserEmail] = useState('');
+  const [editingProcedureCode, setEditingProcedureCode] = useState('');
 
   async function loadData() {
     const token = readToken();
@@ -85,6 +87,24 @@ export default function AdminGestionPage() {
     }
   }
 
+  async function saveUser(email) {
+    const token = readToken();
+    const user = users.find((item) => item.email === email);
+    if (!token || !user) return;
+    try {
+      await apiPut('/api/admin/users/' + encodeURIComponent(email), {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        userType: user.userType,
+        roleCodes: user.roleCodes,
+      }, token);
+      setEditingUserEmail('');
+      await loadData();
+    } catch (err) {
+      setError('Sauvegarde utilisateur impossible.');
+    }
+  }
+
   async function deleteUser(email) {
     const token = readToken();
     if (!token) return;
@@ -93,6 +113,24 @@ export default function AdminGestionPage() {
       await loadData();
     } catch (err) {
       setError('Suppression utilisateur impossible.');
+    }
+  }
+
+  async function saveProcedure(code) {
+    const token = readToken();
+    const procedure = procedures.find((item) => item.code === code);
+    if (!token || !procedure) return;
+    try {
+      await apiPut('/api/admin/procedures/' + encodeURIComponent(code), {
+        title: procedure.title,
+        category: procedure.domain,
+        feeAmount: Number(procedure.feeAmount || 0),
+        estimatedDelayDays: Number(procedure.estimatedDelayDays || 3),
+      }, token);
+      setEditingProcedureCode('');
+      await loadData();
+    } catch (err) {
+      setError('Sauvegarde procedure impossible.');
     }
   }
 
@@ -114,7 +152,7 @@ export default function AdminGestionPage() {
           <div>
             <h1 style={{ fontSize: 38, marginBottom: 8 }}>Admin gestion connectee</h1>
             <p style={{ color: '#475569', lineHeight: 1.7, maxWidth: 900 }}>
-              Cette vue enrichit le cockpit admin avec des formulaires connectes et des actions de mutation.
+              Cette vue enrichit le cockpit admin avec des formulaires connectes et des actions de mutation, y compris l edition utilisateur et procedure.
             </p>
           </div>
 
@@ -164,10 +202,24 @@ export default function AdminGestionPage() {
             <div style={{ display: 'grid', gap: 12 }}>
               {procedures.map((procedure) => (
                 <article key={procedure.code || procedure.id} style={{ border: '1px solid #e2e8f0', borderRadius: 12, padding: 14 }}>
-                  <strong>{procedure.title}</strong>
-                  <div style={{ color: '#334155', marginTop: 4 }}>Code: {procedure.code}</div>
-                  <div style={{ color: '#334155', marginTop: 4 }}>Domaine: {procedure.domain}</div>
-                  <button onClick={() => deleteProcedure(procedure.code)} style={{ marginTop: 10, background: '#b91c1c', color: '#fff', border: 'none', padding: '10px 12px', borderRadius: 8 }}>Supprimer</button>
+                  {editingProcedureCode === procedure.code ? (
+                    <div style={{ display: 'grid', gap: 10 }}>
+                      <input value={procedure.title} onChange={(e) => setProcedures(procedures.map((item) => item.code === procedure.code ? { ...item, title: e.target.value } : item))} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
+                      <input value={procedure.domain} onChange={(e) => setProcedures(procedures.map((item) => item.code === procedure.code ? { ...item, domain: e.target.value } : item))} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
+                      <input value={procedure.feeAmount} onChange={(e) => setProcedures(procedures.map((item) => item.code === procedure.code ? { ...item, feeAmount: e.target.value } : item))} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
+                      <button onClick={() => saveProcedure(procedure.code)} style={{ background: '#1d4ed8', color: '#fff', border: 'none', padding: '10px 12px', borderRadius: 8 }}>Sauvegarder</button>
+                    </div>
+                  ) : (
+                    <>
+                      <strong>{procedure.title}</strong>
+                      <div style={{ color: '#334155', marginTop: 4 }}>Code: {procedure.code}</div>
+                      <div style={{ color: '#334155', marginTop: 4 }}>Domaine: {procedure.domain}</div>
+                      <div style={{ display: 'flex', gap: 10, marginTop: 10, flexWrap: 'wrap' }}>
+                        <button onClick={() => setEditingProcedureCode(procedure.code)} style={{ background: '#1d4ed8', color: '#fff', border: 'none', padding: '10px 12px', borderRadius: 8 }}>Editer</button>
+                        <button onClick={() => deleteProcedure(procedure.code)} style={{ background: '#b91c1c', color: '#fff', border: 'none', padding: '10px 12px', borderRadius: 8 }}>Supprimer</button>
+                      </div>
+                    </>
+                  )}
                 </article>
               ))}
             </div>
@@ -178,13 +230,29 @@ export default function AdminGestionPage() {
             <div style={{ display: 'grid', gap: 12 }}>
               {users.map((user) => (
                 <article key={user.email} style={{ border: '1px solid #e2e8f0', borderRadius: 12, padding: 14 }}>
-                  <strong>{user.firstName} {user.lastName}</strong>
-                  <div style={{ color: '#334155', marginTop: 4 }}>{user.email}</div>
-                  <div style={{ color: '#334155', marginTop: 4 }}>{(user.roleCodes || []).join(', ')}</div>
-                  <div style={{ display: 'flex', gap: 10, marginTop: 10, flexWrap: 'wrap' }}>
-                    <button onClick={() => promoteUser(user.email)} style={{ background: '#1d4ed8', color: '#fff', border: 'none', padding: '10px 12px', borderRadius: 8 }}>Promouvoir agent</button>
-                    <button onClick={() => deleteUser(user.email)} style={{ background: '#b91c1c', color: '#fff', border: 'none', padding: '10px 12px', borderRadius: 8 }}>Supprimer</button>
-                  </div>
+                  {editingUserEmail === user.email ? (
+                    <div style={{ display: 'grid', gap: 10 }}>
+                      <input value={user.firstName} onChange={(e) => setUsers(users.map((item) => item.email === user.email ? { ...item, firstName: e.target.value } : item))} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
+                      <input value={user.lastName} onChange={(e) => setUsers(users.map((item) => item.email === user.email ? { ...item, lastName: e.target.value } : item))} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
+                      <select value={user.userType} onChange={(e) => setUsers(users.map((item) => item.email === user.email ? { ...item, userType: e.target.value, roleCodes: [e.target.value === 'admin' ? 'commune_admin' : e.target.value] } : item))} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }}>
+                        <option value='citizen'>citizen</option>
+                        <option value='agent'>agent</option>
+                        <option value='admin'>admin</option>
+                      </select>
+                      <button onClick={() => saveUser(user.email)} style={{ background: '#1d4ed8', color: '#fff', border: 'none', padding: '10px 12px', borderRadius: 8 }}>Sauvegarder</button>
+                    </div>
+                  ) : (
+                    <>
+                      <strong>{user.firstName} {user.lastName}</strong>
+                      <div style={{ color: '#334155', marginTop: 4 }}>{user.email}</div>
+                      <div style={{ color: '#334155', marginTop: 4 }}>{(user.roleCodes || []).join(', ')}</div>
+                      <div style={{ display: 'flex', gap: 10, marginTop: 10, flexWrap: 'wrap' }}>
+                        <button onClick={() => setEditingUserEmail(user.email)} style={{ background: '#1d4ed8', color: '#fff', border: 'none', padding: '10px 12px', borderRadius: 8 }}>Editer</button>
+                        <button onClick={() => promoteUser(user.email)} style={{ background: '#0f766e', color: '#fff', border: 'none', padding: '10px 12px', borderRadius: 8 }}>Promouvoir agent</button>
+                        <button onClick={() => deleteUser(user.email)} style={{ background: '#b91c1c', color: '#fff', border: 'none', padding: '10px 12px', borderRadius: 8 }}>Supprimer</button>
+                      </div>
+                    </>
+                  )}
                 </article>
               ))}
             </div>
