@@ -1,16 +1,22 @@
 {
   "name": "civitech-commune-api",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "main": "server.js",
   "scripts": {
     "dev": "node server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev"
   },
   "dependencies": {
+    "@prisma/client": "5.20.0",
     "cors": "2.8.5",
     "express": "4.21.0",
     "helmet": "8.0.0",
     "morgan": "1.10.0"
+  },
+  "devDependencies": {
+    "prisma": "5.20.0"
   }
 }
