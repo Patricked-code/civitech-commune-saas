@@ -6,7 +6,10 @@ export const siteConfig = {
     { href: '/', label: 'Accueil' },
     { href: '/commune', label: 'Portail' },
     { href: '/commune/espace-citoyen', label: 'Espace citoyen' },
-    { href: '/commune/admin', label: 'Admin' },
+    { href: '/commune/admin', label: 'Admin mock' },
+    { href: '/commune/admin-console', label: 'Admin connecte' },
     { href: '/commune/demarches', label: 'Demarches' },
+    { href: '/commune/dossiers-connectes', label: 'Dossiers connectes' },
+    { href: '/auth/demo-login', label: 'Demo login' },
   ],
 };
