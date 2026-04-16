@@ -1,17 +1,23 @@
 import { siteConfig } from './site';
 
-export async function apiGet(path: string) {
-  const response = await fetch(siteConfig.apiBaseUrl + path, { cache: 'no-store' });
+export async function apiGet(path: string, token?: string | null) {
+  const response = await fetch(siteConfig.apiBaseUrl + path, {
+    cache: 'no-store',
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  });
   if (!response.ok) {
     throw new Error('API request failed');
   }
   return response.json();
 }
 
-export async function apiPost(path: string, body: Record<string, unknown>) {
+export async function apiPost(path: string, body: Record<string, unknown>, token?: string | null) {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) headers.Authorization = `Bearer ${token}`;
+
   const response = await fetch(siteConfig.apiBaseUrl + path, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify(body),
   });
   if (!response.ok) {
