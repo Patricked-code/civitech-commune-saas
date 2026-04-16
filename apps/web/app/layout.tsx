@@ -1,6 +1,7 @@
 import './globals.css';
 import React from 'react';
 import { MainNav } from '../components/MainNav';
+import { SessionProvider } from '../components/SessionProvider';
 
 export const metadata = {
   title: 'Civitech Commune SaaS',
@@ -11,8 +12,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr">
       <body>
-        <MainNav />
-        {children}
+        <SessionProvider>
+          <MainNav />
+          {children}
+        </SessionProvider>
       </body>
     </html>
   );
