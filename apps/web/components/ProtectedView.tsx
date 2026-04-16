@@ -1,23 +1,20 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { readToken } from '../lib/session';
+import { useSession } from '../hooks/useSession';
 
 export function ProtectedView({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const [ready, setReady] = useState(false);
+  const { token, loading } = useSession();
 
   useEffect(() => {
-    const token = readToken();
-    if (!token) {
+    if (!loading && !token) {
       router.push('/auth/demo-login');
-      return;
     }
-    setReady(true);
-  }, [router]);
+  }, [loading, token, router]);
 
-  if (!ready) {
+  if (loading || !token) {
     return (
       <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#f8fafc' }}>
         <p style={{ color: '#475569' }}>Verification de session...</p>
