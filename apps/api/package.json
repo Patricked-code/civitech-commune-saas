@@ -1,6 +1,6 @@
 {
   "name": "civitech-commune-api",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "main": "server.js",
   "scripts": {
@@ -15,9 +15,11 @@
   },
   "dependencies": {
     "@prisma/client": "5.20.0",
+    "bcryptjs": "2.4.3",
     "cors": "2.8.5",
     "express": "4.21.0",
     "helmet": "8.0.0",
+    "jsonwebtoken": "9.0.2",
     "morgan": "1.10.0"
   },
   "devDependencies": {
