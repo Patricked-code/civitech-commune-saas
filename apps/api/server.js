@@ -13,7 +13,9 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
+require('./src/routes/auth')(app);
 require('./src/routes/commune')(app);
+require('./src/routes/dossiers')(app);
 
 app.get('/health', (req, res) => {
   res.json({
