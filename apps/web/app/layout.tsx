@@ -1,5 +1,6 @@
 import './globals.css';
 import React from 'react';
+import { MainNav } from '../components/MainNav';
 
 export const metadata = {
   title: 'Civitech Commune SaaS',
@@ -9,7 +10,10 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr">
-      <body>{children}</body>
+      <body>
+        <MainNav />
+        {children}
+      </body>
     </html>
   );
 }
