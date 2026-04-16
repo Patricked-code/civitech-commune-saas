@@ -16,13 +16,15 @@ module.exports = (app) => {
   });
 
   app.post('/api/dossiers', requireAuth, async (req, res) => {
-    const { procedureId, service } = req.body || {};
-    if (!procedureId) {
-      return res.status(400).json({ error: 'procedureId is required' });
+    const { procedureId, procedureCode, service, formData } = req.body || {};
+    if (!procedureId && !procedureCode) {
+      return res.status(400).json({ error: 'procedureId or procedureCode is required' });
     }
     const dossier = await createDraftDossier({
       procedureId,
+      procedureCode,
       service,
+      formData,
       tenantId: req.auth.tenantId,
       citizenUserId: req.auth.id,
     });
