@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const { appConfig } = require('./src/config/appConfig');
 
 const app = express();
 const port = process.env.PORT || 3005;
@@ -15,7 +16,21 @@ app.use(morgan('dev'));
 require('./src/routes/commune')(app);
 
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({
+    app: appConfig.appName,
+    version: appConfig.apiVersion,
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+  });
+});
+
+app.get('/api/system/info', (req, res) => {
+  res.json({
+    app: appConfig.appName,
+    version: appConfig.apiVersion,
+    tenantMode: appConfig.tenantMode,
+    seedTenant: appConfig.seedTenant,
+  });
 });
 
 app.use((req, res) => {
