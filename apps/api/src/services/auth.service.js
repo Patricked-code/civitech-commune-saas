@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { users } = require('../data/authSeed');
+const { findUserByEmail, listUsers } = require('../repositories/user.repository');
 const { getPermissionsForRoles } = require('./rbac.service');
 
 const activeSessions = new Map();
@@ -17,9 +17,13 @@ function sanitizeUser(user) {
   };
 }
 
-function login(email, password) {
-  const user = users.find((item) => item.email === email && item.password === password);
+async function login(email, password) {
+  const user = await findUserByEmail(email);
   if (!user) return null;
+
+  const isValid = user.password ? user.password === password : user.passwordHash === password;
+  if (!isValid) return null;
+
   const token = crypto.randomBytes(24).toString('hex');
   const publicUser = sanitizeUser(user);
   activeSessions.set(token, publicUser);
@@ -36,7 +40,8 @@ function logout(token) {
   return activeSessions.delete(token);
 }
 
-function listDemoUsers() {
+async function listDemoUsers() {
+  const users = await listUsers();
   return users.map((item) => sanitizeUser(item));
 }
 
