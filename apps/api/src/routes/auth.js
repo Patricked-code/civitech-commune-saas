@@ -2,12 +2,12 @@ const { login, logout, listDemoUsers } = require('../services/auth.service');
 const { requireAuth } = require('../middleware/auth.middleware');
 
 module.exports = (app) => {
-  app.post('/api/auth/login', (req, res) => {
+  app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body || {};
     if (!email || !password) {
       return res.status(400).json({ error: 'email and password are required' });
     }
-    const session = login(email, password);
+    const session = await login(email, password);
     if (!session) {
       return res.status(401).json({ error: 'invalid credentials' });
     }
@@ -23,7 +23,8 @@ module.exports = (app) => {
     return res.json(req.auth);
   });
 
-  app.get('/api/auth/demo-users', (req, res) => {
-    return res.json({ data: listDemoUsers() });
+  app.get('/api/auth/demo-users', async (req, res) => {
+    const data = await listDemoUsers();
+    return res.json({ data });
   });
 };
