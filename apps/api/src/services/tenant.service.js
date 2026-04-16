@@ -1,9 +1,12 @@
-const { tenant, modules } = require('../data/seedData');
+const { findTenantBySlug } = require('../repositories/tenant.repository');
+const { appConfig } = require('../config/appConfig');
 
-function getTenantProfile() {
+async function getTenantProfile() {
+  const tenant = await findTenantBySlug(appConfig.seedTenant.slug);
+  if (!tenant) return null;
+
   return {
     ...tenant,
-    modules,
     spaces: ['public', 'citoyen', 'admin'],
   };
 }
