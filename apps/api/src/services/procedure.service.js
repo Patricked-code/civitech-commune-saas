@@ -1,18 +1,16 @@
-const { procedures, dossiers } = require('../data/seedData');
+const { listProcedures: repoListProcedures, findProcedureById } = require('../repositories/procedure.repository');
+const { listDossiers: repoListDossiers } = require('../repositories/dossier.repository');
 
-function listProcedures() {
-  return procedures;
+async function listProcedures() {
+  return repoListProcedures();
 }
 
-function getProcedureById(id) {
-  return procedures.find((item) => item.id === id) || null;
+async function getProcedureById(id) {
+  return findProcedureById(id);
 }
 
-function listDossiers() {
-  return dossiers;
-}
-
-function getDashboardStats() {
+async function getDashboardStats() {
+  const dossiers = await repoListDossiers();
   const waiting = dossiers.filter((item) => item.status !== 'available' && item.status !== 'archived').length;
   const toComplete = dossiers.filter((item) => item.status === 'waiting-citizen').length;
   const ready = dossiers.filter((item) => item.status === 'available').length;
@@ -28,6 +26,5 @@ function getDashboardStats() {
 module.exports = {
   listProcedures,
   getProcedureById,
-  listDossiers,
   getDashboardStats,
 };
