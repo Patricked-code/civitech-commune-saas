@@ -1,0 +1,208 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TenantStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum UserStatus {
+  INVITED
+  ACTIVE
+  SUSPENDED
+}
+
+enum ProcedureStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum DossierStatus {
+  DRAFT
+  SUBMITTED
+  QUALIFIED
+  IN_REVIEW
+  WAITING_CITIZEN
+  VALIDATED
+  ISSUED
+  AVAILABLE
+  DELIVERED
+  ARCHIVED
+  REJECTED
+}
+
+model Tenant {
+  id            String       @id @default(cuid())
+  slug          String       @unique
+  name          String
+  countryCode   String       @default("CI")
+  status        TenantStatus @default(ACTIVE)
+  timezone      String       @default("Africa/Abidjan")
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  users         User[]
+  roles         Role[]
+  departments   Department[]
+  procedures    Procedure[]
+  dossiers      Dossier[]
+  auditLogs     AuditLog[]
+}
+
+model User {
+  id            String      @id @default(cuid())
+  tenantId      String
+  email         String
+  passwordHash  String?
+  firstName     String
+  lastName      String
+  phone         String?
+  status        UserStatus  @default(INVITED)
+  userType      String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  tenant        Tenant      @relation(fields: [tenantId], references: [id])
+  userRoles     UserRole[]
+  dossiers      Dossier[]   @relation("CitizenDossiers")
+  auditLogs     AuditLog[]
+
+  @@unique([tenantId, email])
+}
+
+model Role {
+  id            String      @id @default(cuid())
+  tenantId      String
+  code          String
+  label         String
+  scope         String
+  tenant        Tenant      @relation(fields: [tenantId], references: [id])
+  userRoles     UserRole[]
+
+  @@unique([tenantId, code])
+}
+
+model UserRole {
+  id            String      @id @default(cuid())
+  userId        String
+  roleId        String
+  user          User        @relation(fields: [userId], references: [id])
+  role          Role        @relation(fields: [roleId], references: [id])
+
+  @@unique([userId, roleId])
+}
+
+model Department {
+  id            String      @id @default(cuid())
+  tenantId      String
+  code          String
+  label         String
+  parentId      String?
+  tenant        Tenant      @relation(fields: [tenantId], references: [id])
+  services      Service[]
+
+  @@unique([tenantId, code])
+}
+
+model Service {
+  id            String      @id @default(cuid())
+  departmentId  String
+  code          String
+  label         String
+  isActive      Boolean     @default(true)
+  department    Department  @relation(fields: [departmentId], references: [id])
+
+  @@unique([departmentId, code])
+}
+
+model Procedure {
+  id                 String            @id @default(cuid())
+  tenantId           String
+  code               String
+  title              String
+  category           String
+  description        String?
+  status             ProcedureStatus   @default(DRAFT)
+  feeAmount          Int               @default(0)
+  feeCurrency        String            @default("XOF")
+  estimatedDelayDays Int               @default(3)
+  tenant             Tenant            @relation(fields: [tenantId], references: [id])
+  steps              ProcedureStep[]
+  dossiers           Dossier[]
+
+  @@unique([tenantId, code])
+}
+
+model ProcedureStep {
+  id               String     @id @default(cuid())
+  procedureId      String
+  code             String
+  title            String
+  stepOrder        Int
+  stepType         String
+  assignedRoleCode String?
+  slaHours         Int?
+  procedure        Procedure  @relation(fields: [procedureId], references: [id])
+
+  @@unique([procedureId, code])
+}
+
+model Dossier {
+  id               String        @id @default(cuid())
+  tenantId         String
+  procedureId      String
+  citizenUserId    String
+  reference        String        @unique
+  status           DossierStatus @default(DRAFT)
+  currentStepCode  String?
+  submittedAt      DateTime?
+  closedAt         DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  tenant           Tenant        @relation(fields: [tenantId], references: [id])
+  procedure        Procedure     @relation(fields: [procedureId], references: [id])
+  citizenUser      User          @relation("CitizenDossiers", fields: [citizenUserId], references: [id])
+  documents        DossierDocument[]
+  events           DossierEvent[]
+}
+
+model DossierDocument {
+  id               String     @id @default(cuid())
+  dossierId        String
+  documentType     String
+  storageKey       String
+  originalFilename String
+  mimeType         String
+  validationStatus String     @default("PENDING")
+  createdAt        DateTime   @default(now())
+  dossier          Dossier    @relation(fields: [dossierId], references: [id])
+}
+
+model DossierEvent {
+  id               String     @id @default(cuid())
+  dossierId        String
+  eventType        String
+  eventLabel       String
+  actorUserId      String?
+  payloadJson      String?
+  createdAt        DateTime   @default(now())
+  dossier          Dossier    @relation(fields: [dossierId], references: [id])
+}
+
+model AuditLog {
+  id               String     @id @default(cuid())
+  tenantId         String
+  actorUserId      String?
+  actionCode       String
+  targetType       String
+  targetId         String?
+  metadataJson     String?
+  createdAt        DateTime   @default(now())
+  tenant           Tenant     @relation(fields: [tenantId], references: [id])
+  user             User?      @relation(fields: [actorUserId], references: [id])
+}
