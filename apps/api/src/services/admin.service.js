@@ -1,6 +1,8 @@
 const { listUsers } = require('../repositories/user.repository');
+const { createUser } = require('../repositories/user-write.repository');
 const { listProcedures } = require('../repositories/procedure.repository');
 const { createProcedure } = require('../repositories/procedure-write.repository');
+const { updateProcedureByCode, deleteProcedureByCode } = require('../repositories/procedure-admin.repository');
 const { listDossiers } = require('../repositories/dossier.repository');
 
 async function getAdminSnapshot() {
@@ -19,8 +21,11 @@ async function getAdminSnapshot() {
 
 module.exports = {
   listUsers,
+  createUser,
   listProcedures,
   createProcedure,
+  updateProcedureByCode,
+  deleteProcedureByCode,
   listDossiers,
   getAdminSnapshot,
 };
