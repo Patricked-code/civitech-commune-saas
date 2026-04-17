@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { apiGet, apiPost } from '../../../lib/api';
 import { readToken } from '../../../lib/session';
 import { ProtectedView } from '../../../components/ProtectedView';
@@ -19,7 +19,8 @@ export default function AgentDossiersPage() {
       return;
     }
     try {
-      const response = await apiGet('/api/dossiers', token);
+      const query = new URLSearchParams({ status: statusFilter, procedureCode: procedureFilter }).toString();
+      const response = await apiGet('/api/agent/queue?' + query, token);
       setDossiers(response.data || []);
       setStatus('');
     } catch (error) {
@@ -29,17 +30,9 @@ export default function AgentDossiersPage() {
 
   useEffect(() => {
     load();
-  }, []);
+  }, [statusFilter, procedureFilter]);
 
-  const procedureOptions = useMemo(() => Array.from(new Set(dossiers.map((item) => item.procedureCode || item.procedureId))).filter(Boolean), [dossiers]);
-
-  const filtered = useMemo(() => {
-    return dossiers.filter((item) => {
-      const okStatus = statusFilter === 'all' || item.status === statusFilter;
-      const okProcedure = procedureFilter === 'all' || (item.procedureCode || item.procedureId) === procedureFilter;
-      return okStatus && okProcedure;
-    });
-  }, [dossiers, statusFilter, procedureFilter]);
+  const procedureOptions = Array.from(new Set(dossiers.map((item) => item.procedureCode || item.procedureId))).filter(Boolean);
 
   async function pushNext(reference) {
     const token = readToken();
@@ -60,7 +53,7 @@ export default function AgentDossiersPage() {
           <div>
             <h1 style={{ fontSize: 38, marginBottom: 8 }}>Vue agent de traitement dossier</h1>
             <p style={{ color: '#475569', lineHeight: 1.7, maxWidth: 900 }}>
-              Cette vue offre une file de traitement agent avec filtres de statut et de procedure, acces au detail dossier et action de progression rapide du workflow.
+              Cette vue offre une file de traitement priorisee, avec filtres de statut et de procedure, acces au detail dossier et panneau de commentaires internes.
             </p>
           </div>
 
@@ -68,11 +61,10 @@ export default function AgentDossiersPage() {
 
           <section style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 18, padding: 24 }}>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
-              <h2 style={{ marginTop: 0, marginBottom: 0 }}>File de traitement</h2>
+              <h2 style={{ marginTop: 0, marginBottom: 0 }}>File de traitement priorisee</h2>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                 <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }}>
                   <option value='all'>Tous statuts</option>
-                  <option value='draft'>draft</option>
                   <option value='submitted'>submitted</option>
                   <option value='in_review'>in_review</option>
                   <option value='validated'>validated</option>
@@ -89,19 +81,23 @@ export default function AgentDossiersPage() {
               </div>
             </div>
             <div style={{ display: 'grid', gap: 12, marginTop: 14 }}>
-              {filtered.map((dossier) => (
+              {dossiers.map((dossier) => (
                 <article key={dossier.reference} style={{ border: '1px solid #e2e8f0', borderRadius: 12, padding: 14 }}>
                   <strong>{dossier.reference}</strong>
                   <div style={{ color: '#334155', marginTop: 4 }}>{dossier.procedureTitle || dossier.procedureCode || dossier.procedureId}</div>
                   <div style={{ color: '#334155', marginTop: 4 }}>Statut : {dossier.status}</div>
                   <div style={{ color: '#334155', marginTop: 4 }}>Etape : {dossier.currentStep}</div>
                   <div style={{ color: '#334155', marginTop: 4 }}>Prochaine etape : {dossier.nextStep || 'N/A'}</div>
+                  <div style={{ color: '#0f172a', marginTop: 4, fontWeight: 700 }}>Priorite : {dossier.priorityScore ?? 0}</div>
                   <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 10 }}>
                     <button onClick={() => pushNext(dossier.reference)} style={{ background: '#1d4ed8', color: '#fff', border: 'none', padding: '10px 12px', borderRadius: 8 }}>
                       Avancer le workflow
                     </button>
                     <Link href={'/commune/dossiers/' + encodeURIComponent(dossier.reference)} style={{ color: '#1d4ed8', fontWeight: 700, textDecoration: 'none', paddingTop: 10 }}>
                       Ouvrir le detail
+                    </Link>
+                    <Link href={'/commune/agent-dossiers/' + encodeURIComponent(dossier.reference) + '/internal-comments'} style={{ color: '#0f766e', fontWeight: 700, textDecoration: 'none', paddingTop: 10 }}>
+                      Commentaires internes
                     </Link>
                   </div>
                 </article>
