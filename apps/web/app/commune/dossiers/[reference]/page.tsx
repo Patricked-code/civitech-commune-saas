@@ -6,6 +6,8 @@ import { useParams } from 'next/navigation';
 import { apiGet, apiPost, apiPut } from '../../../../lib/api';
 import { readToken } from '../../../../lib/session';
 import { ProtectedView } from '../../../../components/ProtectedView';
+import { useSessionContext } from '../../../../components/SessionProvider';
+import { canAdvanceWorkflow, canResumeDraft, canValidateDocuments } from '../../../../lib/roleGuards';
 
 function parsePayload(payloadJson) {
   if (!payloadJson) return null;
@@ -18,6 +20,7 @@ function parsePayload(payloadJson) {
 
 export default function DossierDetailPage() {
   const params = useParams();
+  const { user } = useSessionContext();
   const reference = Array.isArray(params.reference) ? params.reference[0] : params.reference;
   const [dossier, setDossier] = useState(null);
   const [error, setError] = useState('');
@@ -52,6 +55,10 @@ export default function DossierDetailPage() {
   const firstPayload = useMemo(() => {
     if (!dossier || !dossier.events || dossier.events.length === 0) return null;
     return parsePayload(dossier.events[0].payloadJson);
+  }, [dossier]);
+
+  const commentEvents = useMemo(() => {
+    return (dossier?.events || []).filter((item) => item.eventType === 'WORKFLOW_COMMENT');
   }, [dossier]);
 
   async function submitDraft() {
@@ -92,15 +99,30 @@ export default function DossierDetailPage() {
     }
   }
 
-  function handleSimulatedFileChange(event) {
+  async function handleSimulatedFileChange(event) {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
-    setAttachment({
-      ...attachment,
-      originalFilename: file.name,
-      mimeType: file.type || 'application/octet-stream',
-      storageKey: 'simulated-uploads/' + Date.now() + '-' + file.name,
-    });
+    const token = readToken();
+    if (!token) return;
+    try {
+      let prepared = null;
+      try {
+        prepared = await apiPost('/api/uploads/prepare', { originalFilename: file.name, mimeType: file.type || 'application/octet-stream' }, token);
+      } catch (prepError) {
+        prepared = null;
+      }
+      setAttachment({
+        ...attachment,
+        originalFilename: file.name,
+        mimeType: file.type || 'application/octet-stream',
+        storageKey: prepared?.storageKey || 'simulated-uploads/' + Date.now() + '-' + file.name,
+      });
+      if (prepared?.storageKey) {
+        setStatus('Preparation d upload simulee effectuee.');
+      }
+    } catch (error) {
+      setStatus('Preparation d upload impossible.');
+    }
   }
 
   async function addAttachment(event) {
@@ -159,10 +181,12 @@ export default function DossierDetailPage() {
                   <button onClick={submitDraft} style={{ background: '#0f766e', color: '#fff', border: 'none', padding: '12px 16px', borderRadius: 10 }}>
                     Soumettre le brouillon
                   </button>
-                  <button onClick={moveToNextStep} style={{ background: '#1d4ed8', color: '#fff', border: 'none', padding: '12px 16px', borderRadius: 10 }}>
-                    Passer a l etape suivante
-                  </button>
-                  {dossier.status === 'draft' ? (
+                  {canAdvanceWorkflow(user) ? (
+                    <button onClick={moveToNextStep} style={{ background: '#1d4ed8', color: '#fff', border: 'none', padding: '12px 16px', borderRadius: 10 }}>
+                      Passer a l etape suivante
+                    </button>
+                  ) : null}
+                  {dossier.status === 'draft' && canResumeDraft(user) ? (
                     <Link href={'/commune/dossiers/' + encodeURIComponent(dossier.reference) + '/edit'} style={{ background: '#fff', color: '#0f766e', border: '1px solid #0f766e', padding: '12px 16px', borderRadius: 10, textDecoration: 'none', fontWeight: 700 }}>
                       Editer le brouillon
                     </Link>
@@ -187,13 +211,21 @@ export default function DossierDetailPage() {
               </section>
 
               <section style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 18, padding: 24 }}>
-                <h2 style={{ marginTop: 0 }}>Commentaire workflow</h2>
+                <h2 style={{ marginTop: 0 }}>Commentaires workflow</h2>
                 <form onSubmit={addComment} style={{ display: 'grid', gap: 12 }}>
                   <textarea placeholder='Ajouter un commentaire de traitement ou de suivi' value={workflowComment} onChange={(e) => setWorkflowComment(e.target.value)} style={{ minHeight: 120, padding: 12, borderRadius: 10, border: '1px solid #cbd5e1' }} />
                   <button type='submit' style={{ background: '#1d4ed8', color: '#fff', border: 'none', padding: '12px 16px', borderRadius: 10 }}>
                     Ajouter le commentaire
                   </button>
                 </form>
+                <div style={{ display: 'grid', gap: 12, marginTop: 16 }}>
+                  {commentEvents.map((eventItem, index) => (
+                    <article key={eventItem.id || index} style={{ border: '1px solid #e2e8f0', borderRadius: 12, padding: 14 }}>
+                      <div style={{ fontWeight: 700 }}>{eventItem.eventLabel}</div>
+                      <pre style={{ whiteSpace: 'pre-wrap', marginTop: 10, background: '#f8fafc', padding: 12, borderRadius: 10 }}>{eventItem.payloadJson || ''}</pre>
+                    </article>
+                  ))}
+                </div>
               </section>
 
               <section style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 18, padding: 24 }}>
@@ -205,14 +237,16 @@ export default function DossierDetailPage() {
                       <div style={{ color: '#64748b', marginTop: 4 }}>{document.documentType}</div>
                       <div style={{ color: '#64748b', marginTop: 4 }}>{document.mimeType}</div>
                       <div style={{ color: '#334155', marginTop: 4 }}>Statut documentaire : {document.validationStatus || 'PENDING'}</div>
-                      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 10 }}>
-                        <button onClick={() => updateDocumentStatus(document.id, 'APPROVED')} style={{ background: '#0f766e', color: '#fff', border: 'none', padding: '10px 12px', borderRadius: 8 }}>
-                          Marquer approuve
-                        </button>
-                        <button onClick={() => updateDocumentStatus(document.id, 'REJECTED')} style={{ background: '#b91c1c', color: '#fff', border: 'none', padding: '10px 12px', borderRadius: 8 }}>
-                          Marquer rejete
-                        </button>
-                      </div>
+                      {canValidateDocuments(user) ? (
+                        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 10 }}>
+                          <button onClick={() => updateDocumentStatus(document.id, 'APPROVED')} style={{ background: '#0f766e', color: '#fff', border: 'none', padding: '10px 12px', borderRadius: 8 }}>
+                            Marquer approuve
+                          </button>
+                          <button onClick={() => updateDocumentStatus(document.id, 'REJECTED')} style={{ background: '#b91c1c', color: '#fff', border: 'none', padding: '10px 12px', borderRadius: 8 }}>
+                            Marquer rejete
+                          </button>
+                        </div>
+                      ) : null}
                     </article>
                   ))}
                 </div>
@@ -232,7 +266,7 @@ export default function DossierDetailPage() {
               <section style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 18, padding: 24 }}>
                 <h2 style={{ marginTop: 0 }}>Evenements persistés</h2>
                 <div style={{ display: 'grid', gap: 12 }}>
-                  {(dossier.events || []).map((eventItem, index) => (
+                  {(dossier.events || []).filter((item) => item.eventType !== 'WORKFLOW_COMMENT').map((eventItem, index) => (
                     <article key={eventItem.id || index} style={{ border: '1px solid #e2e8f0', borderRadius: 12, padding: 14 }}>
                       <div><strong>{eventItem.eventType}</strong></div>
                       <div style={{ color: '#64748b', marginTop: 4 }}>{eventItem.eventLabel}</div>
