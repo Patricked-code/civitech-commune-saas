@@ -17,6 +17,7 @@ require('./src/routes/auth')(app);
 require('./src/routes/commune')(app);
 require('./src/routes/dossiers')(app);
 require('./src/routes/citizen')(app);
+require('./src/routes/agent-secure')(app);
 require('./src/routes/admin')(app);
 require('./src/routes/admin-users')(app);
 require('./src/routes/admin-procedure-mutations')(app);
