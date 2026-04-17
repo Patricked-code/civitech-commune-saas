@@ -3,6 +3,7 @@ const {
   listDossiers,
   getDossierByReference,
   createDraftDossier,
+  updateDraftDossier,
   moveDossierToNextStep,
   submitDraftDossier,
   addCommentToDossier,
@@ -38,6 +39,19 @@ module.exports = (app) => {
       citizenUserId: req.auth.id,
     });
     return res.status(201).json(dossier);
+  });
+
+  app.put('/api/dossiers/:reference/draft', requireAuth, async (req, res) => {
+    const { formData } = req.body || {};
+    if (!formData || typeof formData !== 'object') {
+      return res.status(400).json({ error: 'formData is required' });
+    }
+    const dossier = await updateDraftDossier(req.params.reference, {
+      actorUserId: req.auth.id,
+      formData,
+    });
+    if (!dossier) return res.status(404).json({ error: 'Dossier not found' });
+    return res.json(dossier);
   });
 
   app.post('/api/dossiers/:reference/submit', requireAuth, async (req, res) => {
