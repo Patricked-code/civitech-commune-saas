@@ -143,7 +143,9 @@ async function transitionDossier(reference, payload) {
     const dossier = dossiers.find((item) => item.reference === reference);
     if (!dossier) return null;
     dossier.currentStep = targetStep;
-    dossier.status = targetStep === 'submitted' ? 'submitted' : 'in_review';
+    if (targetStep === 'submitted') dossier.status = 'submitted';
+    else if (targetStep === 'validated' || targetStep === 'issued' || targetStep === 'available') dossier.status = targetStep;
+    else dossier.status = 'in_review';
     dossier.events = dossier.events || [];
     dossier.events.push({
       eventType: 'DOSSIER_STEP_CHANGED',
@@ -156,11 +158,13 @@ async function transitionDossier(reference, payload) {
   const existing = await prisma.dossier.findUnique({ where: { reference }, include: { procedure: true, events: true, documents: true } });
   if (!existing) return null;
 
+  const nextStatus = targetStep === 'submitted' ? 'SUBMITTED' : targetStep === 'validated' ? 'VALIDATED' : targetStep === 'issued' ? 'ISSUED' : targetStep === 'available' ? 'AVAILABLE' : 'IN_REVIEW';
+
   const updated = await prisma.dossier.update({
     where: { reference },
     data: {
       currentStepCode: targetStep,
-      status: targetStep === 'submitted' ? 'SUBMITTED' : 'IN_REVIEW',
+      status: nextStatus,
       events: {
         create: {
           eventType: 'DOSSIER_STEP_CHANGED',
