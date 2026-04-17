@@ -9,6 +9,7 @@ const {
   addDossierAttachment,
   updateAttachmentStatus,
 } = require('../repositories/dossier.repository');
+const { updateDossierDraftPayload } = require('../repositories/dossier-draft.repository');
 const { computeNextStep, computeProgress } = require('./workflow.service');
 
 function resolveWorkflowKey(dossier) {
@@ -41,6 +42,16 @@ async function getDossierByReference(reference) {
 
 async function createDraftDossier(payload) {
   return createDossier(payload);
+}
+
+async function updateDraftDossier(reference, payload) {
+  const updated = await updateDossierDraftPayload(reference, payload);
+  if (!updated) return null;
+  if (updated.reference) {
+    const dossier = await findDossierByReference(reference);
+    return dossier ? enrichDossier(dossier) : enrichDossier(updated);
+  }
+  return null;
 }
 
 async function moveDossierToNextStep(reference, payload) {
@@ -79,6 +90,7 @@ module.exports = {
   listCitizenDossiers,
   getDossierByReference,
   createDraftDossier,
+  updateDraftDossier,
   moveDossierToNextStep,
   submitDraftDossier,
   addCommentToDossier,
