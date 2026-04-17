@@ -1,5 +1,6 @@
 "use client";
 
+import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { apiGet, apiPost, apiPut } from '../../../../lib/api';
@@ -91,13 +92,24 @@ export default function DossierDetailPage() {
     }
   }
 
+  function handleSimulatedFileChange(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    setAttachment({
+      ...attachment,
+      originalFilename: file.name,
+      mimeType: file.type || 'application/octet-stream',
+      storageKey: 'simulated-uploads/' + Date.now() + '-' + file.name,
+    });
+  }
+
   async function addAttachment(event) {
     event.preventDefault();
     const token = readToken();
     if (!token || !reference) return;
     try {
       await apiPost('/api/dossiers/' + encodeURIComponent(reference) + '/attachments', attachment, token);
-      setStatus('Piece jointe de demonstration ajoutee.');
+      setStatus('Piece jointe simulee ajoutee.');
       setAttachment({ documentType: 'piece-identite', storageKey: '', originalFilename: '', mimeType: 'application/pdf' });
       await load();
     } catch (error) {
@@ -150,6 +162,11 @@ export default function DossierDetailPage() {
                   <button onClick={moveToNextStep} style={{ background: '#1d4ed8', color: '#fff', border: 'none', padding: '12px 16px', borderRadius: 10 }}>
                     Passer a l etape suivante
                   </button>
+                  {dossier.status === 'draft' ? (
+                    <Link href={'/commune/dossiers/' + encodeURIComponent(dossier.reference) + '/edit'} style={{ background: '#fff', color: '#0f766e', border: '1px solid #0f766e', padding: '12px 16px', borderRadius: 10, textDecoration: 'none', fontWeight: 700 }}>
+                      Editer le brouillon
+                    </Link>
+                  ) : null}
                 </div>
               </section>
 
@@ -202,11 +219,12 @@ export default function DossierDetailPage() {
 
                 <form onSubmit={addAttachment} style={{ display: 'grid', gap: 12, marginTop: 18 }}>
                   <input placeholder='Type de document' value={attachment.documentType} onChange={(e) => setAttachment({ ...attachment, documentType: e.target.value })} style={{ padding: 12, borderRadius: 10, border: '1px solid #cbd5e1' }} />
+                  <input type='file' onChange={handleSimulatedFileChange} style={{ padding: 12, borderRadius: 10, border: '1px solid #cbd5e1', background: '#fff' }} />
                   <input placeholder='Storage key de demonstration' value={attachment.storageKey} onChange={(e) => setAttachment({ ...attachment, storageKey: e.target.value })} style={{ padding: 12, borderRadius: 10, border: '1px solid #cbd5e1' }} />
                   <input placeholder='Nom original du fichier' value={attachment.originalFilename} onChange={(e) => setAttachment({ ...attachment, originalFilename: e.target.value })} style={{ padding: 12, borderRadius: 10, border: '1px solid #cbd5e1' }} />
                   <input placeholder='Mime type' value={attachment.mimeType} onChange={(e) => setAttachment({ ...attachment, mimeType: e.target.value })} style={{ padding: 12, borderRadius: 10, border: '1px solid #cbd5e1' }} />
                   <button type='submit' style={{ background: '#0f766e', color: '#fff', border: 'none', padding: '12px 16px', borderRadius: 10 }}>
-                    Ajouter une piece jointe de demonstration
+                    Ajouter une piece jointe simulee
                   </button>
                 </form>
               </section>
