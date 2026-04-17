@@ -1,4 +1,6 @@
 const { requireAuth } = require('../middleware/auth.middleware');
+const { requirePermission } = require('../middleware/permission.middleware');
+const { permissions } = require('../security/permissions');
 const {
   listDossiers,
   getDossierByReference,
@@ -12,12 +14,12 @@ const {
 } = require('../services/dossier.service');
 
 module.exports = (app) => {
-  app.get('/api/dossiers', requireAuth, async (req, res) => {
+  app.get('/api/dossiers', requireAuth, requirePermission(permissions.dossier.read), async (req, res) => {
     const data = await listDossiers();
     return res.json({ data, total: data.length });
   });
 
-  app.get('/api/dossiers/:reference', requireAuth, async (req, res) => {
+  app.get('/api/dossiers/:reference', requireAuth, requirePermission(permissions.dossier.read), async (req, res) => {
     const dossier = await getDossierByReference(req.params.reference);
     if (!dossier) {
       return res.status(404).json({ error: 'Dossier not found' });
@@ -25,7 +27,7 @@ module.exports = (app) => {
     return res.json(dossier);
   });
 
-  app.post('/api/dossiers', requireAuth, async (req, res) => {
+  app.post('/api/dossiers', requireAuth, requirePermission(permissions.dossier.create), async (req, res) => {
     const { procedureId, procedureCode, service, formData } = req.body || {};
     if (!procedureId && !procedureCode) {
       return res.status(400).json({ error: 'procedureId or procedureCode is required' });
@@ -41,7 +43,7 @@ module.exports = (app) => {
     return res.status(201).json(dossier);
   });
 
-  app.put('/api/dossiers/:reference/draft', requireAuth, async (req, res) => {
+  app.put('/api/dossiers/:reference/draft', requireAuth, requirePermission(permissions.dossier.create), async (req, res) => {
     const { formData } = req.body || {};
     if (!formData || typeof formData !== 'object') {
       return res.status(400).json({ error: 'formData is required' });
@@ -54,7 +56,7 @@ module.exports = (app) => {
     return res.json(dossier);
   });
 
-  app.post('/api/dossiers/:reference/submit', requireAuth, async (req, res) => {
+  app.post('/api/dossiers/:reference/submit', requireAuth, requirePermission(permissions.dossier.create), async (req, res) => {
     const dossier = await submitDraftDossier(req.params.reference, {
       actorUserId: req.auth.id,
       comment: (req.body || {}).comment || 'Citizen submitted dossier',
@@ -63,7 +65,7 @@ module.exports = (app) => {
     return res.json(dossier);
   });
 
-  app.post('/api/dossiers/:reference/comments', requireAuth, async (req, res) => {
+  app.post('/api/dossiers/:reference/comments', requireAuth, requirePermission(permissions.dossier.read), async (req, res) => {
     const { comment } = req.body || {};
     if (!comment) return res.status(400).json({ error: 'comment is required' });
     const event = await addCommentToDossier(req.params.reference, { actorUserId: req.auth.id, comment });
@@ -71,7 +73,7 @@ module.exports = (app) => {
     return res.status(201).json(event);
   });
 
-  app.post('/api/dossiers/:reference/next-step', requireAuth, async (req, res) => {
+  app.post('/api/dossiers/:reference/next-step', requireAuth, requirePermission(permissions.dossier.update), async (req, res) => {
     const dossier = await moveDossierToNextStep(req.params.reference, {
       actorUserId: req.auth.id,
       comment: (req.body || {}).comment || '',
@@ -82,7 +84,7 @@ module.exports = (app) => {
     return res.json(dossier);
   });
 
-  app.post('/api/dossiers/:reference/attachments', requireAuth, async (req, res) => {
+  app.post('/api/dossiers/:reference/attachments', requireAuth, requirePermission(permissions.dossier.create), async (req, res) => {
     const { documentType, storageKey, originalFilename, mimeType } = req.body || {};
     if (!documentType || !storageKey || !originalFilename || !mimeType) {
       return res.status(400).json({ error: 'documentType, storageKey, originalFilename and mimeType are required' });
@@ -100,7 +102,7 @@ module.exports = (app) => {
     return res.status(201).json(document);
   });
 
-  app.put('/api/dossiers/:reference/attachments/:documentId/status', requireAuth, async (req, res) => {
+  app.put('/api/dossiers/:reference/attachments/:documentId/status', requireAuth, requirePermission(permissions.dossier.validate), async (req, res) => {
     const { validationStatus } = req.body || {};
     if (!validationStatus) return res.status(400).json({ error: 'validationStatus is required' });
     const document = await changeAttachmentStatus(req.params.reference, req.params.documentId, {
