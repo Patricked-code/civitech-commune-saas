@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { apiGet } from '../../../lib/api';
 import { readToken } from '../../../lib/session';
 import { ProtectedView } from '../../../components/ProtectedView';
@@ -9,6 +9,7 @@ import { ProtectedView } from '../../../components/ProtectedView';
 export default function EspaceCitoyenPage() {
   const [dashboard, setDashboard] = useState(null);
   const [error, setError] = useState('');
+  const [filter, setFilter] = useState('all');
 
   useEffect(() => {
     async function load() {
@@ -27,6 +28,12 @@ export default function EspaceCitoyenPage() {
     load();
   }, []);
 
+  const filteredDossiers = useMemo(() => {
+    const all = dashboard?.dossiers || [];
+    if (filter === 'all') return all;
+    return all.filter((item) => item.status === filter);
+  }, [dashboard, filter]);
+
   return (
     <ProtectedView>
       <main style={{ background: '#f8fafc', minHeight: '100vh', padding: '32px 20px' }}>
@@ -34,7 +41,7 @@ export default function EspaceCitoyenPage() {
           <div>
             <h1 style={{ fontSize: 38, marginBottom: 8 }}>Espace citoyen</h1>
             <p style={{ color: '#475569', lineHeight: 1.7, maxWidth: 900 }}>
-              Tableau de bord usager connecte aux vrais dossiers du citoyen, avec suivi des brouillons, dossiers soumis et dossiers en cours.
+              Tableau de bord usager connecte aux vrais dossiers du citoyen, avec filtres par statut et reprise d un brouillon existant.
             </p>
           </div>
 
@@ -62,9 +69,20 @@ export default function EspaceCitoyenPage() {
               </section>
 
               <section style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 18, padding: 24 }}>
-                <h2 style={{ marginTop: 0 }}>Mes demarches recentes</h2>
-                <div style={{ display: 'grid', gap: 14 }}>
-                  {(dashboard.dossiers || []).map((demande) => (
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <h2 style={{ marginTop: 0, marginBottom: 0 }}>Mes demarches recentes</h2>
+                  <select value={filter} onChange={(e) => setFilter(e.target.value)} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }}>
+                    <option value='all'>Tous</option>
+                    <option value='draft'>Brouillons</option>
+                    <option value='submitted'>Soumis</option>
+                    <option value='in_review'>En cours</option>
+                    <option value='validated'>Valides</option>
+                    <option value='issued'>Emis</option>
+                    <option value='available'>Disponibles</option>
+                  </select>
+                </div>
+                <div style={{ display: 'grid', gap: 14, marginTop: 14 }}>
+                  {filteredDossiers.map((demande) => (
                     <article key={demande.reference} style={{ border: '1px solid #e2e8f0', borderRadius: 14, padding: 18, background: '#fcfdff' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                         <div>
@@ -75,9 +93,16 @@ export default function EspaceCitoyenPage() {
                       </div>
                       <div style={{ marginTop: 12, color: '#475569' }}>Progression : {demande.computedProgress || 0}%</div>
                       <div style={{ marginTop: 6, color: '#475569' }}>Prochaine etape : {demande.nextStep || 'N/A'}</div>
-                      <Link href={'/commune/dossiers/' + encodeURIComponent(demande.reference)} style={{ display: 'inline-block', marginTop: 10, color: '#1d4ed8', textDecoration: 'none', fontWeight: 700 }}>
-                        Ouvrir le detail
-                      </Link>
+                      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 10 }}>
+                        <Link href={'/commune/dossiers/' + encodeURIComponent(demande.reference)} style={{ color: '#1d4ed8', textDecoration: 'none', fontWeight: 700 }}>
+                          Ouvrir le detail
+                        </Link>
+                        {demande.status === 'draft' ? (
+                          <Link href={'/commune/dossiers/' + encodeURIComponent(demande.reference) + '/edit'} style={{ color: '#0f766e', textDecoration: 'none', fontWeight: 700 }}>
+                            Reprendre le brouillon
+                          </Link>
+                        ) : null}
+                      </div>
                     </article>
                   ))}
                 </div>
