@@ -5,9 +5,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { apiGet, apiPut } from '../../../lib/api';
 import { readToken } from '../../../lib/session';
 import { ProtectedView } from '../../../components/ProtectedView';
+import type { AgentDocumentRow } from '../../../lib/appTypes';
 
 export default function AgentValidationDocumentsPage() {
-  const [rows, setRows] = useState([]);
+  const [rows, setRows] = useState<AgentDocumentRow[]>([]);
   const [status, setStatus] = useState('');
   const [docFilter, setDocFilter] = useState('PENDING');
 
@@ -34,7 +35,7 @@ export default function AgentValidationDocumentsPage() {
     return rows.filter((row) => docFilter === 'ALL' ? true : (row.document.validationStatus || 'PENDING') === docFilter);
   }, [rows, docFilter]);
 
-  async function updateStatus(reference, documentId, validationStatus) {
+  async function updateStatus(reference: string, documentId: string, validationStatus: string) {
     const token = readToken();
     if (!token) return;
     try {
