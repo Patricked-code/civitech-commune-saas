@@ -1,15 +1,26 @@
 "use client";
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useParams } from 'next/navigation';
 import { apiGet, apiPost } from '../../../../../lib/api';
 import { readToken } from '../../../../../lib/session';
 import { ProtectedView } from '../../../../../components/ProtectedView';
 
+type InternalCommentEvent = {
+  id?: string;
+  eventType: string;
+  eventLabel: string;
+  payloadJson?: string;
+};
+
+type InternalCommentsDossier = {
+  events: InternalCommentEvent[];
+};
+
 export default function AgentInternalCommentsPage() {
   const params = useParams();
   const reference = Array.isArray(params.reference) ? params.reference[0] : params.reference;
-  const [dossier, setDossier] = useState(null);
+  const [dossier, setDossier] = useState<InternalCommentsDossier | null>(null);
   const [comment, setComment] = useState('');
   const [status, setStatus] = useState('');
 
@@ -33,7 +44,7 @@ export default function AgentInternalCommentsPage() {
     return (dossier?.events || []).filter((item) => item.eventType === 'INTERNAL_COMMENT');
   }, [dossier]);
 
-  async function submitComment(event) {
+  async function submitComment(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const token = readToken();
     if (!token || !reference || !comment) return;
