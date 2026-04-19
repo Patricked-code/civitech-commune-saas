@@ -6,9 +6,10 @@ import { apiGet } from '../../../lib/api';
 import { readToken } from '../../../lib/session';
 import { ProtectedView } from '../../../components/ProtectedView';
 import { RoleProtected } from '../../../components/RoleProtected';
+import type { DossierListItem } from '../../../lib/appTypes';
 
 export default function AgentPrioriteDuJourPage() {
-  const [rows, setRows] = useState([]);
+  const [rows, setRows] = useState<DossierListItem[]>([]);
   const [status, setStatus] = useState('');
 
   useEffect(() => {
