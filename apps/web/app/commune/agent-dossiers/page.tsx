@@ -5,9 +5,10 @@ import { useEffect, useState } from 'react';
 import { apiGet, apiPost } from '../../../lib/api';
 import { readToken } from '../../../lib/session';
 import { ProtectedView } from '../../../components/ProtectedView';
+import type { DossierListItem } from '../../../lib/appTypes';
 
 export default function AgentDossiersPage() {
-  const [dossiers, setDossiers] = useState([]);
+  const [dossiers, setDossiers] = useState<DossierListItem[]>([]);
   const [status, setStatus] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [procedureFilter, setProcedureFilter] = useState('all');
@@ -32,9 +33,9 @@ export default function AgentDossiersPage() {
     load();
   }, [statusFilter, procedureFilter]);
 
-  const procedureOptions = Array.from(new Set(dossiers.map((item) => item.procedureCode || item.procedureId))).filter(Boolean);
+  const procedureOptions = Array.from(new Set(dossiers.map((item) => item.procedureCode || item.procedureId))).filter(Boolean) as string[];
 
-  async function pushNext(reference) {
+  async function pushNext(reference: string) {
     const token = readToken();
     if (!token) return;
     try {
