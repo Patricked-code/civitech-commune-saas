@@ -5,9 +5,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { apiGet } from '../../../lib/api';
 import { readToken } from '../../../lib/session';
 import { ProtectedView } from '../../../components/ProtectedView';
+import type { CitizenDashboard } from '../../../lib/appTypes';
 
 export default function MesDossiersSoumisPage() {
-  const [dashboard, setDashboard] = useState(null);
+  const [dashboard, setDashboard] = useState<CitizenDashboard | null>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -27,7 +28,7 @@ export default function MesDossiersSoumisPage() {
     load();
   }, []);
 
-  const submitted = useMemo(() => (dashboard?.dossiers || []).filter((item) => ['submitted','in_review','validated','issued','available'].includes(item.status)), [dashboard]);
+  const submitted = useMemo(() => (dashboard?.dossiers || []).filter((item) => ['submitted', 'in_review', 'validated', 'issued', 'available'].includes(item.status)), [dashboard]);
 
   return (
     <ProtectedView>
