@@ -5,9 +5,22 @@ import { apiGet } from '../../../lib/api';
 import { removeToken, readToken } from '../../../lib/session';
 import { ProtectedView } from '../../../components/ProtectedView';
 
+type AdminSummary = {
+  usersCount: number;
+  proceduresCount: number;
+  dossiersCount: number;
+};
+
+type AdminUser = {
+  email: string;
+  firstName: string;
+  lastName: string;
+  roleCodes?: string[];
+};
+
 export default function AdminConsolePage() {
-  const [summary, setSummary] = useState(null);
-  const [users, setUsers] = useState([]);
+  const [summary, setSummary] = useState<AdminSummary | null>(null);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
