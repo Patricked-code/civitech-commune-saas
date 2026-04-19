@@ -1,17 +1,35 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { apiDelete, apiGet, apiPost, apiPut } from '../../../lib/api';
 import { readToken } from '../../../lib/session';
 import { ProtectedView } from '../../../components/ProtectedView';
+import type { AdminUser, ProcedureItem, RoleItem } from '../../../lib/appTypes';
+
+type UserFormState = {
+  email: string;
+  firstName: string;
+  lastName: string;
+  password: string;
+  userType: string;
+  roleCodes: string[];
+};
+
+type ProcedureFormState = {
+  code: string;
+  title: string;
+  category: string;
+  feeAmount: string;
+  estimatedDelayDays: string;
+};
 
 export default function AdminGestionPage() {
-  const [users, setUsers] = useState([]);
-  const [procedures, setProcedures] = useState([]);
-  const [roles, setRoles] = useState([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [procedures, setProcedures] = useState<ProcedureItem[]>([]);
+  const [roles, setRoles] = useState<RoleItem[]>([]);
   const [error, setError] = useState('');
-  const [userForm, setUserForm] = useState({ email: '', firstName: '', lastName: '', password: 'demo1234', userType: 'citizen', roleCodes: ['citizen'] });
-  const [procedureForm, setProcedureForm] = useState({ code: '', title: '', category: 'Etat civil', feeAmount: '0', estimatedDelayDays: '3' });
+  const [userForm, setUserForm] = useState<UserFormState>({ email: '', firstName: '', lastName: '', password: 'demo1234', userType: 'citizen', roleCodes: ['citizen'] });
+  const [procedureForm, setProcedureForm] = useState<ProcedureFormState>({ code: '', title: '', category: 'Etat civil', feeAmount: '0', estimatedDelayDays: '3' });
   const [editingUserEmail, setEditingUserEmail] = useState('');
   const [editingProcedureCode, setEditingProcedureCode] = useState('');
 
@@ -40,7 +58,7 @@ export default function AdminGestionPage() {
     loadData();
   }, []);
 
-  async function createUser(event) {
+  async function createUser(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const token = readToken();
     try {
@@ -52,7 +70,7 @@ export default function AdminGestionPage() {
     }
   }
 
-  async function createProcedure(event) {
+  async function createProcedure(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const token = readToken();
     try {
@@ -70,7 +88,7 @@ export default function AdminGestionPage() {
     }
   }
 
-  async function promoteUser(email) {
+  async function promoteUser(email: string) {
     const token = readToken();
     const user = users.find((item) => item.email === email);
     if (!token || !user) return;
@@ -87,7 +105,7 @@ export default function AdminGestionPage() {
     }
   }
 
-  async function saveUser(email) {
+  async function saveUser(email: string) {
     const token = readToken();
     const user = users.find((item) => item.email === email);
     if (!token || !user) return;
@@ -105,7 +123,7 @@ export default function AdminGestionPage() {
     }
   }
 
-  async function deleteUser(email) {
+  async function deleteUser(email: string) {
     const token = readToken();
     if (!token) return;
     try {
@@ -116,7 +134,7 @@ export default function AdminGestionPage() {
     }
   }
 
-  async function saveProcedure(code) {
+  async function saveProcedure(code: string) {
     const token = readToken();
     const procedure = procedures.find((item) => item.code === code);
     if (!token || !procedure) return;
@@ -134,7 +152,7 @@ export default function AdminGestionPage() {
     }
   }
 
-  async function deleteProcedure(code) {
+  async function deleteProcedure(code: string) {
     const token = readToken();
     if (!token) return;
     try {
@@ -205,8 +223,8 @@ export default function AdminGestionPage() {
                   {editingProcedureCode === procedure.code ? (
                     <div style={{ display: 'grid', gap: 10 }}>
                       <input value={procedure.title} onChange={(e) => setProcedures(procedures.map((item) => item.code === procedure.code ? { ...item, title: e.target.value } : item))} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
-                      <input value={procedure.domain} onChange={(e) => setProcedures(procedures.map((item) => item.code === procedure.code ? { ...item, domain: e.target.value } : item))} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
-                      <input value={procedure.feeAmount} onChange={(e) => setProcedures(procedures.map((item) => item.code === procedure.code ? { ...item, feeAmount: e.target.value } : item))} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
+                      <input value={procedure.domain || ''} onChange={(e) => setProcedures(procedures.map((item) => item.code === procedure.code ? { ...item, domain: e.target.value } : item))} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
+                      <input value={String(procedure.feeAmount || '')} onChange={(e) => setProcedures(procedures.map((item) => item.code === procedure.code ? { ...item, feeAmount: e.target.value } : item))} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
                       <button onClick={() => saveProcedure(procedure.code)} style={{ background: '#1d4ed8', color: '#fff', border: 'none', padding: '10px 12px', borderRadius: 8 }}>Sauvegarder</button>
                     </div>
                   ) : (
