@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiPost } from '../../../lib/api';
 import { writeToken } from '../../../lib/session';
@@ -11,7 +11,7 @@ export default function DemoLoginPage() {
   const [password, setPassword] = useState('demo1234');
   const [status, setStatus] = useState('');
 
-  async function onSubmit(event) {
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus('Connexion en cours...');
     try {
