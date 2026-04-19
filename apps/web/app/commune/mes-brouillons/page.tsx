@@ -5,9 +5,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { apiGet } from '../../../lib/api';
 import { readToken } from '../../../lib/session';
 import { ProtectedView } from '../../../components/ProtectedView';
+import type { CitizenDashboard } from '../../../lib/appTypes';
 
 export default function MesBrouillonsPage() {
-  const [dashboard, setDashboard] = useState(null);
+  const [dashboard, setDashboard] = useState<CitizenDashboard | null>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
