@@ -4,11 +4,12 @@ import { useEffect, useState } from 'react';
 import { apiDelete, apiGet, apiPut } from '../../../lib/api';
 import { readToken } from '../../../lib/session';
 import { ProtectedView } from '../../../components/ProtectedView';
+import type { AdminUser, ProcedureItem, RoleItem } from '../../../lib/appTypes';
 
 export default function AdminCrudPage() {
-  const [users, setUsers] = useState([]);
-  const [procedures, setProcedures] = useState([]);
-  const [roles, setRoles] = useState([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [procedures, setProcedures] = useState<ProcedureItem[]>([]);
+  const [roles, setRoles] = useState<RoleItem[]>([]);
   const [status, setStatus] = useState('');
 
   async function loadData() {
