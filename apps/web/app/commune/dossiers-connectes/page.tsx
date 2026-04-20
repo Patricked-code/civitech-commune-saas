@@ -5,9 +5,10 @@ import { useEffect, useState } from 'react';
 import { apiGet, apiPost } from '../../../lib/api';
 import { readToken } from '../../../lib/session';
 import { ProtectedView } from '../../../components/ProtectedView';
+import type { DossierListItem } from '../../../lib/appTypes';
 
 export default function DossiersConnectesPage() {
-  const [dossiers, setDossiers] = useState([]);
+  const [dossiers, setDossiers] = useState<DossierListItem[]>([]);
   const [error, setError] = useState('');
   const [creating, setCreating] = useState(false);
 
