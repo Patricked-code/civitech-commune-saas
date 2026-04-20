@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { apiGet, apiPut } from '../../../../../lib/api';
 import { readToken } from '../../../../../lib/session';
 import { ProtectedView } from '../../../../../components/ProtectedView';
+import type { DossierDetail } from '../../../../../lib/appTypes';
 
-function parsePayload(payloadJson) {
+function parsePayload(payloadJson?: string): Record<string, unknown> {
   if (!payloadJson) return {};
   try {
-    return JSON.parse(payloadJson);
+    return JSON.parse(payloadJson) as Record<string, unknown>;
   } catch (error) {
     return {};
   }
@@ -19,8 +20,8 @@ export default function EditDraftPage() {
   const params = useParams();
   const router = useRouter();
   const reference = Array.isArray(params.reference) ? params.reference[0] : params.reference;
-  const [dossier, setDossier] = useState(null);
-  const [formData, setFormData] = useState({});
+  const [dossier, setDossier] = useState<DossierDetail | null>(null);
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [status, setStatus] = useState('');
 
   useEffect(() => {
@@ -41,7 +42,7 @@ export default function EditDraftPage() {
 
   const entries = useMemo(() => Object.entries(formData || {}), [formData]);
 
-  async function saveDraft(event) {
+  async function saveDraft(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const token = readToken();
     if (!token || !reference) return;
