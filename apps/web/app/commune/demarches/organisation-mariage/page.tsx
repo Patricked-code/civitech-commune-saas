@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { apiPost } from '../../../../lib/api';
 import { readToken } from '../../../../lib/session';
 import { ProtectedView } from '../../../../components/ProtectedView';
@@ -20,7 +20,7 @@ export default function OrganisationMariagePage() {
   const [createdReference, setCreatedReference] = useState('');
   const [status, setStatus] = useState('');
 
-  async function handleSubmit(event) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const token = readToken();
     if (!token) {
