@@ -2,8 +2,9 @@
 
 import { createContext, useContext } from 'react';
 import { useSession } from '../hooks/useSession';
+import type { SessionState } from '../lib/appTypes';
 
-const SessionContext = createContext({ token: null, user: null, loading: true });
+const SessionContext = createContext<SessionState>({ token: null, user: null, loading: true });
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
   const session = useSession();
