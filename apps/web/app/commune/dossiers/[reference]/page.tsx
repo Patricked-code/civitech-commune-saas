@@ -1,32 +1,40 @@
 "use client";
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
 import { useParams } from 'next/navigation';
 import { apiGet, apiPost, apiPut } from '../../../../lib/api';
 import { readToken } from '../../../../lib/session';
 import { ProtectedView } from '../../../../components/ProtectedView';
 import { useSessionContext } from '../../../../components/SessionProvider';
 import { canAdvanceWorkflow, canResumeDraft, canValidateDocuments } from '../../../../lib/roleGuards';
+import type { DossierDetail, DossierDocument, DossierEvent } from '../../../../lib/appTypes';
 
-function parsePayload(payloadJson) {
+function parsePayload(payloadJson?: string): Record<string, unknown> | null {
   if (!payloadJson) return null;
   try {
-    return JSON.parse(payloadJson);
+    return JSON.parse(payloadJson) as Record<string, unknown>;
   } catch (error) {
     return null;
   }
 }
 
+type AttachmentState = {
+  documentType: string;
+  storageKey: string;
+  originalFilename: string;
+  mimeType: string;
+};
+
 export default function DossierDetailPage() {
   const params = useParams();
   const { user } = useSessionContext();
   const reference = Array.isArray(params.reference) ? params.reference[0] : params.reference;
-  const [dossier, setDossier] = useState(null);
+  const [dossier, setDossier] = useState<DossierDetail | null>(null);
   const [error, setError] = useState('');
   const [status, setStatus] = useState('');
   const [workflowComment, setWorkflowComment] = useState('');
-  const [attachment, setAttachment] = useState({
+  const [attachment, setAttachment] = useState<AttachmentState>({
     documentType: 'piece-identite',
     storageKey: '',
     originalFilename: '',
@@ -41,7 +49,7 @@ export default function DossierDetailPage() {
     }
     try {
       const response = await apiGet('/api/dossiers/' + encodeURIComponent(reference), token);
-      setDossier(response);
+      setDossier(response as DossierDetail);
       setError('');
     } catch (err) {
       setError('Impossible de charger le detail du dossier.');
@@ -57,7 +65,7 @@ export default function DossierDetailPage() {
     return parsePayload(dossier.events[0].payloadJson);
   }, [dossier]);
 
-  const commentEvents = useMemo(() => {
+  const commentEvents = useMemo((): DossierEvent[] => {
     return (dossier?.events || []).filter((item) => item.eventType === 'WORKFLOW_COMMENT');
   }, [dossier]);
 
@@ -85,7 +93,7 @@ export default function DossierDetailPage() {
     }
   }
 
-  async function addComment(event) {
+  async function addComment(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const token = readToken();
     if (!token || !reference || !workflowComment) return;
@@ -99,24 +107,24 @@ export default function DossierDetailPage() {
     }
   }
 
-  async function handleSimulatedFileChange(event) {
+  async function handleSimulatedFileChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
     const token = readToken();
     if (!token) return;
     try {
-      let prepared = null;
+      let prepared: { storageKey?: string } | null = null;
       try {
         prepared = await apiPost('/api/uploads/prepare', { originalFilename: file.name, mimeType: file.type || 'application/octet-stream' }, token);
       } catch (prepError) {
         prepared = null;
       }
-      setAttachment({
-        ...attachment,
+      setAttachment((prev) => ({
+        ...prev,
         originalFilename: file.name,
         mimeType: file.type || 'application/octet-stream',
         storageKey: prepared?.storageKey || 'simulated-uploads/' + Date.now() + '-' + file.name,
-      });
+      }));
       if (prepared?.storageKey) {
         setStatus('Preparation d upload simulee effectuee.');
       }
@@ -125,7 +133,7 @@ export default function DossierDetailPage() {
     }
   }
 
-  async function addAttachment(event) {
+  async function addAttachment(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const token = readToken();
     if (!token || !reference) return;
@@ -139,7 +147,7 @@ export default function DossierDetailPage() {
     }
   }
 
-  async function updateDocumentStatus(documentId, validationStatus) {
+  async function updateDocumentStatus(documentId: string, validationStatus: string) {
     const token = readToken();
     if (!token || !reference) return;
     try {
@@ -231,7 +239,7 @@ export default function DossierDetailPage() {
               <section style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 18, padding: 24 }}>
                 <h2 style={{ marginTop: 0 }}>Pieces jointes</h2>
                 <div style={{ display: 'grid', gap: 12 }}>
-                  {(dossier.documents || []).map((document, index) => (
+                  {(dossier.documents || []).map((document: DossierDocument, index) => (
                     <article key={document.id || index} style={{ border: '1px solid #e2e8f0', borderRadius: 12, padding: 14 }}>
                       <div><strong>{document.originalFilename}</strong></div>
                       <div style={{ color: '#64748b', marginTop: 4 }}>{document.documentType}</div>
