@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { readToken } from '../lib/session';
 import { apiGet } from '../lib/api';
+import { clearSessionStorage, readStoredUser, readToken, writeStoredUser } from '../lib/session';
 import type { SessionState, SessionUser } from '../lib/appTypes';
 
 export function useSession(): SessionState {
@@ -13,7 +13,11 @@ export function useSession(): SessionState {
   useEffect(() => {
     async function loadSession() {
       const storedToken = readToken();
+      const storedUser = readStoredUser() as SessionUser | null;
       setToken(storedToken);
+      if (storedUser) {
+        setUser(storedUser);
+      }
       if (!storedToken) {
         setLoading(false);
         return;
@@ -21,7 +25,10 @@ export function useSession(): SessionState {
       try {
         const me = await apiGet('/api/auth/me', storedToken);
         setUser(me as SessionUser);
+        writeStoredUser(me as SessionUser);
       } catch (error) {
+        clearSessionStorage();
+        setToken(null);
         setUser(null);
       } finally {
         setLoading(false);
