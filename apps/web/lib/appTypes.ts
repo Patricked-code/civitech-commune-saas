@@ -39,6 +39,7 @@ export type DossierListItem = {
   nextStep?: string | null;
   computedProgress?: number;
   priorityScore?: number;
+  documentsCount?: number;
 };
 
 export type CitizenDashboard = {
