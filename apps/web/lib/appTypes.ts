@@ -13,6 +13,20 @@ export type AdminUser = {
   roleCodes?: string[];
 };
 
+export type SessionUser = {
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  userType?: string;
+  roleCodes?: string[];
+};
+
+export type SessionState = {
+  token: string | null;
+  user: SessionUser | null;
+  loading: boolean;
+};
+
 export type ProcedureItem = {
   id?: string;
   code: string;
