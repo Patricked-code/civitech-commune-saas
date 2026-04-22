@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiPost } from '../../../lib/api';
-import { writeToken } from '../../../lib/session';
+import { writeStoredUser, writeToken } from '../../../lib/session';
 
 export default function DemoLoginPage() {
   const router = useRouter();
@@ -17,6 +17,7 @@ export default function DemoLoginPage() {
     try {
       const response = await apiPost('/api/auth/login', { email, password });
       writeToken(response.token);
+      writeStoredUser(response.user);
       setStatus('Connexion reussie.');
       router.push('/commune/admin-console');
     } catch (error) {
