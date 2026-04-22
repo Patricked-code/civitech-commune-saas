@@ -13,6 +13,10 @@ Le socle couvre :
 - API backend dediee ;
 - base de travail pour un futur modele multi-communes.
 
+## Orientation Niakara
+
+Le projet sert maintenant de socle pour le portail public et le cockpit communal de Niakara, avec une reutilisation SaaS possible pour d autres communes.
+
 ## Structure
 
 - `apps/web` : frontend Next.js
@@ -20,6 +24,15 @@ Le socle couvre :
 - `deploy/nginx` : modele de reverse proxy Nginx
 - `deploy/scripts` : scripts de preparation et de deploiement IONOS
 - `ecosystem.config.js` : configuration PM2
+
+## Batch d evolution n°1
+
+Ce batch stabilise le socle avant l enrichissement metier :
+- configuration CORS a partir des variables d environnement ;
+- ajout d un endpoint d inscription citoyenne ;
+- persistence du token et d un snapshot utilisateur cote frontend ;
+- page `/auth/login` transformee en page connexion + inscription ;
+- navigation et pages d accueil orientees Niakara.
 
 ## Demarrage local
 
