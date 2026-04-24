@@ -2,10 +2,19 @@ import './globals.css';
 import React from 'react';
 import { MainNav } from '../components/MainNav';
 import { SessionProvider } from '../components/SessionProvider';
+import { CanonicalHostRedirect } from '../components/CanonicalHostRedirect';
+import { siteConfig } from '../lib/site';
 
 export const metadata = {
-  title: 'Civitech Commune SaaS',
-  description: 'Portail communal SaaS pour la digitalisation des services municipaux.',
+  metadataBase: new URL(siteConfig.appUrl),
+  title: {
+    default: 'Commune de Niakara | Portail citoyen et services municipaux',
+    template: '%s | Commune de Niakara',
+  },
+  description: 'Portail numerique de la commune de Niakara pour les informations publiques, les demarches citoyennes et les services municipaux.',
+  alternates: {
+    canonical: '/',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -13,6 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="fr">
       <body>
         <SessionProvider>
+          <CanonicalHostRedirect />
           <MainNav />
           {children}
         </SessionProvider>
