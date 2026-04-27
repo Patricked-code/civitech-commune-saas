@@ -7,9 +7,15 @@ function normalizeOrigin(origin: string) {
   return origin.replace(/\/$/, '');
 }
 
+function isLocalHost(hostname: string) {
+  return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0';
+}
+
 export function CanonicalHostRedirect() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (isLocalHost(window.location.hostname)) return;
+
     const canonical = normalizeOrigin(siteConfig.appUrl);
     const current = normalizeOrigin(window.location.origin);
     if (!canonical || current === canonical) return;
