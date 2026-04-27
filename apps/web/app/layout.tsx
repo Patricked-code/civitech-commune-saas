@@ -3,6 +3,7 @@ import React from 'react';
 import { MainNav } from '../components/MainNav';
 import { SessionProvider } from '../components/SessionProvider';
 import { CanonicalHostRedirect } from '../components/CanonicalHostRedirect';
+import { SiteFooter } from '../components/SiteFooter';
 import { siteConfig } from '../lib/site';
 
 export const metadata = {
@@ -25,6 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <CanonicalHostRedirect />
           <MainNav />
           {children}
+          <SiteFooter />
         </SessionProvider>
       </body>
     </html>
