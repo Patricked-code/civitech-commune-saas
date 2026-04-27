@@ -20,16 +20,24 @@ Statut : fusionne dans `main` apres validation CI.
 
 Objectifs : profil connecte, notifications, messages, documents, brouillons, dossiers soumis et suivi detaille.
 
-Statut : en cours dans la PR Batch 4 avec profil, notifications, messages et tableau de bord citoyen renforces.
+Statut : fusionne dans `main`.
 
 ## Batch 5 — Cockpit mairie complet
 
 Objectifs : dashboard mairie, files de traitement, priorites, validation documentaire, reporting, audit et vues agents.
 
+Statut : cockpit mairie, file agent et validation documentaire fusionnes dans `main`.
+
 ## Batch 6 — Socle SaaS multi-communes
 
 Objectifs : tenant, branding, roles, parametrage, superadmin et duplication pour d autres communes.
 
+Statut : en cours. Documentation d exploitation SaaS ajoutee pour cadrer la future passe GitHub vers VPS IONOS.
+
 ## Avant fusion vers main
 
 Verifier le build frontend, le demarrage API, Prisma, login, inscription, dossiers, navigation et variables d environnement.
+
+## Prochaine passe consolidee VPS
+
+La mise a jour VPS doit se faire uniquement depuis `main`, apres validation d une version coherente. Les branches `batch-*` restent temporaires et ne doivent pas servir de source de deploiement.
