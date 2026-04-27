@@ -2,7 +2,7 @@ const municipalityName = process.env.NEXT_PUBLIC_MUNICIPALITY_NAME || 'Commune d
 const municipalityShortName = process.env.NEXT_PUBLIC_MUNICIPALITY_SHORT_NAME || 'Niakara';
 
 export const siteConfig = {
-  name: 'Civitech Commune SaaS',
+  name: process.env.NEXT_PUBLIC_APP_NAME || 'Civitech Commune SaaS',
   municipality: municipalityName,
   municipalityShortName,
   appUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://www.niakara.com',
@@ -11,6 +11,7 @@ export const siteConfig = {
   publicSections: [
     { href: '/', label: 'Accueil' },
     { href: '/commune', label: 'Portail communal' },
+    { href: '/commune/presentation', label: 'Presentation' },
     { href: '/commune/espace-citoyen', label: 'Espace citoyen' },
     { href: '/commune/demarches', label: 'Demarches' },
     { href: '/auth/login', label: 'Connexion / Inscription' },
