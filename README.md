@@ -17,6 +17,11 @@ Le socle couvre :
 
 Le projet sert maintenant de socle pour le portail public et le cockpit communal de Niakara, avec une reutilisation SaaS possible pour d autres communes.
 
+Domaines cibles :
+- `https://www.niakara.com` : origine web canonique ;
+- `https://niakara.com` : origine alternative ;
+- `https://api.niakara.com` : API publique.
+
 ## Structure
 
 - `apps/web` : frontend Next.js
@@ -33,6 +38,20 @@ Ce batch stabilise le socle avant l enrichissement metier :
 - persistence du token et d un snapshot utilisateur cote frontend ;
 - page `/auth/login` transformee en page connexion + inscription ;
 - navigation et pages d accueil orientees Niakara.
+
+## Batch d evolution n°2
+
+Ce batch consolide le produit Niakara en mode repo-first :
+- origine canonique web/API centralisee ;
+- garde de configuration production cote API ;
+- erreurs API JSON plus homogenes ;
+- erreurs frontend plus lisibles ;
+- redirection canonique cote web pour stabiliser `www` / non-`www` ;
+- controle d acces dossier renforce par tenant, roles et proprietaire citoyen ;
+- navigation publique reorganisee par zones produit ;
+- footer institutionnel global ;
+- pages publiques ajoutees ou enrichies : presentation, services, actualites, agenda, documents, contact, FAQ, signalement, transparence, confidentialite, mentions ;
+- pages citoyennes preparees : profil, notifications, messages.
 
 ## Demarrage local
 
@@ -74,6 +93,8 @@ cd civitech-commune-saas
 - copier `apps/web/.env.production.example` vers `apps/web/.env.production`
 - copier `apps/api/.env.example` vers `apps/api/.env`
 - ajuster les domaines, la base PostgreSQL et les secrets JWT
+- verifier `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_ALT_APP_URL`, `NEXT_PUBLIC_API_BASE_URL`
+- verifier `CANONICAL_WEB_ORIGIN`, `ALTERNATE_WEB_ORIGIN`, `API_PUBLIC_ORIGIN`, `CORS_ORIGIN`
 
 ### 4. Installer et builder
 
@@ -133,12 +154,16 @@ bash deploy/scripts/deploy-ionos.sh
 
 ### Frontend
 - la home charge
+- le portail communal charge
+- les pages publiques chargees
 - l espace citoyen charge
 - la vue agent charge
 - la vue validation documentaire charge
+- le footer et la navigation chargeent sur les pages principales
 
 ### Flux critiques
-- login demo fonctionne
+- login demo fonctionne en environnement de test
+- inscription citoyenne fonctionne
 - creation d un brouillon fonctionne
 - reprise d un brouillon fonctionne
 - soumission d un dossier fonctionne
@@ -153,22 +178,47 @@ bash deploy/scripts/deploy-ionos.sh
 - domaines Nginx remplaces
 - HTTPS configure via Certbot
 - PM2 redemarre correctement apres reboot
+- comptes de demonstration retires ou strictement encadres avant ouverture publique
 
 ## Routes fonctionnelles majeures
 
-### Frontend
+### Frontend public
 - `/`
 - `/commune`
+- `/commune/presentation`
+- `/commune/services`
+- `/commune/actualites`
+- `/commune/agenda`
+- `/commune/documents`
+- `/commune/contact`
+- `/commune/faq`
+- `/commune/demarches`
+- `/commune/signalement`
+- `/commune/transparence`
+- `/commune/confidentialite`
+- `/commune/mentions-legales`
+
+### Frontend citoyen
+- `/auth/login`
 - `/commune/espace-citoyen`
+- `/commune/profil`
+- `/commune/notifications`
+- `/commune/messages`
 - `/commune/mes-brouillons`
 - `/commune/mes-dossiers-soumis`
+
+### Frontend backoffice
+- `/commune/admin-console`
+- `/commune/admin-gestion`
+- `/commune/admin-crud`
 - `/commune/agent-dossiers`
 - `/commune/agent-priorite-du-jour`
 - `/commune/agent-validation-documents`
-- `/commune/demarches`
+- `/commune/dossiers-connectes`
 
 ### API
 - `GET /health`
+- `GET /api/system/info`
 - `GET /api/commune/health`
 - `GET /api/citizen/dashboard`
 - `GET /api/agent/queue`
@@ -179,9 +229,11 @@ bash deploy/scripts/deploy-ionos.sh
 
 ## Statut reel du projet
 
-Le projet est maintenant suffisamment avance pour un deploiement de test ou de preproduction sur VPS IONOS.
+Le projet est suffisamment avance pour un deploiement de test ou de preproduction sur VPS IONOS apres fusion de la branche de stabilisation dans `main` et verification du build.
+
 Il reste recommande de finaliser ensuite :
 - le vrai upload binaire vers un stockage cible ;
 - les tests automatises ;
 - le monitoring et la journalisation de production ;
-- la revue finale des permissions et des secrets avant ouverture publique.
+- la revue finale des permissions et des secrets avant ouverture publique ;
+- les contenus institutionnels definitifs fournis et valides par la commune.
