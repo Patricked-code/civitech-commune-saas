@@ -2,10 +2,17 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { apiGet } from '../../../lib/api';
+import { apiGet, getApiErrorMessage } from '../../../lib/api';
 import { readToken } from '../../../lib/session';
 import { ProtectedView } from '../../../components/ProtectedView';
 import type { CitizenDashboard } from '../../../lib/appTypes';
+
+const citizenShortcuts = [
+  { href: '/commune/profil', label: 'Profil', text: 'Consulter les informations de mon compte.' },
+  { href: '/commune/notifications', label: 'Notifications', text: 'Suivre les alertes liees a mes dossiers.' },
+  { href: '/commune/messages', label: 'Messages', text: 'Preparer les echanges avec la mairie.' },
+  { href: '/commune/documents', label: 'Documents utiles', text: 'Retrouver les documents publics et pieces utiles.' },
+];
 
 export default function EspaceCitoyenPage() {
   const [dashboard, setDashboard] = useState<CitizenDashboard | null>(null);
@@ -23,7 +30,7 @@ export default function EspaceCitoyenPage() {
         const response = await apiGet('/api/citizen/dashboard', token);
         setDashboard(response);
       } catch (err) {
-        setError('Impossible de charger le tableau de bord citoyen.');
+        setError(getApiErrorMessage(err, 'Impossible de charger le tableau de bord citoyen.'));
       }
     }
     load();
@@ -37,16 +44,33 @@ export default function EspaceCitoyenPage() {
 
   return (
     <ProtectedView>
-      <main style={{ background: '#f8fafc', minHeight: '100vh', padding: '32px 20px' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gap: 24 }}>
-          <div>
-            <h1 style={{ fontSize: 38, marginBottom: 8 }}>Espace citoyen</h1>
-            <p style={{ color: '#475569', lineHeight: 1.7, maxWidth: 900 }}>
-              Tableau de bord usager connecte aux vrais dossiers du citoyen, avec filtres par statut et reprise d un brouillon existant.
+      <main style={{ background: '#f8fafc', minHeight: '100vh', padding: '32px 20px', color: '#0f172a' }}>
+        <div style={{ maxWidth: 1120, margin: '0 auto', display: 'grid', gap: 24 }}>
+          <section style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1d4ed8 62%, #0ea5e9 100%)', color: '#fff', borderRadius: 26, padding: 30 }}>
+            <div style={{ display: 'inline-block', padding: '8px 14px', borderRadius: 999, background: 'rgba(255,255,255,0.14)', fontWeight: 900, marginBottom: 14 }}>
+              Espace citoyen connecte
+            </div>
+            <h1 style={{ fontSize: 40, lineHeight: 1.1, margin: 0 }}>Tableau de bord citoyen</h1>
+            <p style={{ lineHeight: 1.75, opacity: 0.95, maxWidth: 880 }}>
+              Retrouvez vos dossiers, vos brouillons, vos messages et les raccourcis utiles pour suivre vos demarches communales.
             </p>
-          </div>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 18 }}>
+              <Link href='/commune/demarches' style={{ background: '#fff', color: '#0f172a', padding: '12px 18px', borderRadius: 12, textDecoration: 'none', fontWeight: 900 }}>Nouvelle demarche</Link>
+              <Link href='/commune/profil' style={{ color: '#fff', border: '1px solid rgba(255,255,255,0.35)', padding: '12px 18px', borderRadius: 12, textDecoration: 'none', fontWeight: 900 }}>Mon profil</Link>
+              <Link href='/commune/messages' style={{ color: '#fff', border: '1px solid rgba(255,255,255,0.35)', padding: '12px 18px', borderRadius: 12, textDecoration: 'none', fontWeight: 900 }}>Messages</Link>
+            </div>
+          </section>
 
-          {error ? <p style={{ color: '#b91c1c' }}>{error}</p> : null}
+          {error ? <p style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: 14, borderRadius: 14 }}>{error}</p> : null}
+
+          <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
+            {citizenShortcuts.map((item) => (
+              <Link key={item.href} href={item.href} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 18, padding: 20, textDecoration: 'none', color: '#0f172a', boxShadow: '0 8px 24px rgba(15,23,42,0.05)' }}>
+                <div style={{ fontWeight: 900, fontSize: 19 }}>{item.label}</div>
+                <p style={{ color: '#475569', lineHeight: 1.65, marginBottom: 0 }}>{item.text}</p>
+              </Link>
+            ))}
+          </section>
 
           {dashboard ? (
             <>
@@ -83,6 +107,9 @@ export default function EspaceCitoyenPage() {
                   </select>
                 </div>
                 <div style={{ display: 'grid', gap: 14, marginTop: 14 }}>
+                  {filteredDossiers.length === 0 ? (
+                    <div style={{ border: '1px dashed #cbd5e1', borderRadius: 14, padding: 18, color: '#64748b' }}>Aucun dossier ne correspond au filtre selectionne.</div>
+                  ) : null}
                   {filteredDossiers.map((demande) => (
                     <article key={demande.reference} style={{ border: '1px solid #e2e8f0', borderRadius: 14, padding: 18, background: '#fcfdff' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
