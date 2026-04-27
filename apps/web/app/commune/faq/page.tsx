@@ -14,8 +14,20 @@ const questions = [
     answer: 'Les premieres demarches ciblees sont la declaration de naissance, la demande de copie d acte, la declaration de deces et l organisation de mariage.',
   },
   {
+    question: 'Puis-je enregistrer un brouillon ?',
+    answer: 'Le socle applicatif prevoit la creation et la reprise de brouillons afin de completer une demande progressivement.',
+  },
+  {
     question: 'Les pieces jointes sont-elles deja gerees ?',
     answer: 'Le socle permet deja de preparer et rattacher des pieces a un dossier. Le stockage binaire reel sera consolide dans une prochaine phase.',
+  },
+  {
+    question: 'Que faire si je ne trouve pas la bonne demarche ?',
+    answer: 'La page Contact et la page Signalement servent de points d orientation vers le bon service communal.',
+  },
+  {
+    question: 'Le portail est-il reutilisable pour d autres communes ?',
+    answer: 'Oui. L architecture prepare un modele SaaS avec tenant, roles, procedures et branding adaptables.',
   },
 ];
 
@@ -23,7 +35,7 @@ export default function FaqPage() {
   return (
     <PublicPageShell
       title="Questions frequentes"
-      description="Une premiere base de reponses pour guider les citoyens dans l utilisation du portail numerique communal."
+      description="Une base de reponses pour guider les citoyens dans l utilisation du portail numerique communal."
       primaryCta={{ href: '/auth/login', label: 'Me connecter' }}
       secondaryCta={{ href: '/commune/contact', label: 'Contacter la commune' }}
     >
