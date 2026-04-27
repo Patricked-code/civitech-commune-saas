@@ -1,0 +1,31 @@
+name: Validate
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/civitech_commune_saas
+      JWT_SECRET: ci_validation_secret
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:3005
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_ALT_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_APP_NAME: Civitech Commune SaaS
+      NEXT_PUBLIC_MUNICIPALITY_NAME: Commune de Niakara
+      NEXT_PUBLIC_MUNICIPALITY_SHORT_NAME: Niakara
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm install
+      - run: npm --workspace apps/api run prisma:generate
+      - run: npm --workspace apps/web run build
