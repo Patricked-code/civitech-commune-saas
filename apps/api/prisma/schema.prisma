@@ -73,6 +73,9 @@ model User {
   auditLogs     AuditLog[]
 
   @@unique([tenantId, email])
+  @@index([tenantId])
+  @@index([email])
+  @@index([status])
 }
 
 model Role {
@@ -169,6 +172,13 @@ model Dossier {
   citizenUser      User          @relation("CitizenDossiers", fields: [citizenUserId], references: [id])
   documents        DossierDocument[]
   events           DossierEvent[]
+
+  @@index([tenantId])
+  @@index([procedureId])
+  @@index([citizenUserId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([reference])
 }
 
 model DossierDocument {
@@ -181,6 +191,9 @@ model DossierDocument {
   validationStatus String     @default("PENDING")
   createdAt        DateTime   @default(now())
   dossier          Dossier    @relation(fields: [dossierId], references: [id])
+
+  @@index([dossierId])
+  @@index([validationStatus])
 }
 
 model DossierEvent {
@@ -205,4 +218,8 @@ model AuditLog {
   createdAt        DateTime   @default(now())
   tenant           Tenant     @relation(fields: [tenantId], references: [id])
   user             User?      @relation(fields: [actorUserId], references: [id])
+
+  @@index([tenantId])
+  @@index([actorUserId])
+  @@index([createdAt])
 }
