@@ -1,8 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-const morgan = require('morgan');
+const morgan = require("morgan");
+const rateLimit = require("express-rate-limit");
 const { appConfig, assertProductionConfig } = require('./src/config/appConfig');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpecs = require('./src/config/swagger');
 
 assertProductionConfig();
 
@@ -28,6 +31,25 @@ app.use(helmet({
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: "Trop de requêtes depuis cette adresse IP, veuillez réessayer après 15 minutes.",
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // Limit each IP to 10 requests per windowMs
+  message: "Trop de tentatives de connexion/inscription depuis cette adresse IP, veuillez réessayer après 15 minutes.",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use("/api/auth", authLimiter);
+app.use("/api", apiLimiter);
 app.use(morgan(appConfig.isProduction ? 'combined' : 'dev'));
 
 function asyncRoute(handler) {
@@ -47,6 +69,8 @@ require('./src/routes/uploads')(app);
 require('./src/routes/admin')(app);
 require('./src/routes/admin-users')(app);
 require('./src/routes/admin-procedure-mutations')(app);
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 app.get('/health', (req, res) => {
   res.json({

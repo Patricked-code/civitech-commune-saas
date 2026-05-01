@@ -1,113 +1,297 @@
 "use client";
 
-import { useState, type FormEvent } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { apiPost } from '../../../lib/api';
-import { writeStoredUser, writeToken } from '../../../lib/session';
-import { siteConfig } from '../../../lib/site';
+import { useState, type FormEvent } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { apiPost } from "../../../lib/api";
+import { writeStoredUser, writeToken } from "../../../lib/session";
+import { siteConfig } from "../../../lib/site";
+import { FormError } from "../../../components/FormError";
+import { showToast } from "../../../components/Toast";
+import { LogIn, UserPlus } from "lucide-react";
 
 const demoUsers = [
-  'citoyen@niakara.ci / demo1234',
-  'agent.etatcivil@niakara.ci / demo1234',
-  'admin@niakara.ci / demo1234',
+  { email: "citoyen@niakara.ci", password: "demo1234", role: "Citoyen" },
+  { email: "agent.etatcivil@niakara.ci", password: "demo1234", role: "Agent" },
+  { email: "admin@niakara.ci", password: "demo1234", role: "Admin" },
 ];
 
 export default function LoginPage() {
   const router = useRouter();
-  const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [loginEmail, setLoginEmail] = useState('admin@niakara.ci');
-  const [loginPassword, setLoginPassword] = useState('demo1234');
-  const [registerForm, setRegisterForm] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
+  const [mode, setMode] = useState<"login" | "register">("login");
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string[]>>({});
+
+  const [loginForm, setLoginForm] = useState({
+    email: "admin@niakara.ci",
+    password: "demo1234",
   });
-  const [status, setStatus] = useState('');
+
+  const [registerForm, setRegisterForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    passwordConfirm: "",
+  });
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setStatus('Connexion en cours...');
+    setErrors({});
+    setIsLoading(true);
+
     try {
-      const response = await apiPost('/api/auth/login', { email: loginEmail, password: loginPassword });
+      const response = await apiPost("/api/auth/login", {
+        email: loginForm.email,
+        password: loginForm.password,
+      });
       writeToken(response.token);
       writeStoredUser(response.user);
-      setStatus('Connexion reussie.');
-      router.push('/commune/admin-console');
-    } catch (error) {
-      setStatus('Echec de connexion.');
+      showToast("Connexion réussie", "success");
+      router.push("/commune/admin-console");
+    } catch (error: any) {
+      if (error.status === 400 && error.data?.errors) {
+        const errorMap: Record<string, string[]> = {};
+        error.data.errors.forEach((err: any) => {
+          const field = err.path || "general";
+          if (!errorMap[field]) errorMap[field] = [];
+          errorMap[field].push(err.msg);
+        });
+        setErrors(errorMap);
+      } else {
+        showToast("Identifiants invalides", "error");
+      }
+    } finally {
+      setIsLoading(false);
     }
   }
 
   async function handleRegister(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setStatus('Creation du compte citoyen en cours...');
+    setErrors({});
+
+    // Validation côté client
+    const newErrors: Record<string, string[]> = {};
+    if (registerForm.password !== registerForm.passwordConfirm) {
+      newErrors.passwordConfirm = ["Les mots de passe ne correspondent pas"];
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setIsLoading(true);
     try {
-      const response = await apiPost('/api/auth/register', {
-        ...registerForm,
-        tenantSlug: 'niakaramadougou',
+      const response = await apiPost("/api/auth/register", {
+        firstName: registerForm.firstName,
+        lastName: registerForm.lastName,
+        email: registerForm.email,
+        password: registerForm.password,
+        tenantSlug: "niakaramadougou",
       });
       writeToken(response.token);
       writeStoredUser(response.user);
-      setStatus('Compte citoyen cree avec succes.');
-      router.push('/commune/espace-citoyen');
-    } catch (error) {
-      setStatus('Creation du compte impossible.');
+      showToast("Compte citoyen créé avec succès", "success");
+      router.push("/commune/espace-citoyen");
+    } catch (error: any) {
+      if (error.status === 400 && error.data?.errors) {
+        const errorMap: Record<string, string[]> = {};
+        error.data.errors.forEach((err: any) => {
+          const field = err.path || "general";
+          if (!errorMap[field]) errorMap[field] = [];
+          errorMap[field].push(err.msg);
+        });
+        setErrors(errorMap);
+      } else if (error.status === 409) {
+        setErrors({ email: ["Cet email est déjà utilisé"] });
+      } else {
+        showToast("Erreur lors de la création du compte", "error");
+      }
+    } finally {
+      setIsLoading(false);
     }
   }
 
   return (
-    <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 24, background: '#f8fafc' }}>
-      <div style={{ width: '100%', maxWidth: 720, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 22, padding: 32, boxShadow: '0 12px 32px rgba(15,23,42,0.06)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
-          <div>
-            <div style={{ color: '#1d4ed8', fontWeight: 700, marginBottom: 8 }}>{siteConfig.municipality}</div>
-            <h1 style={{ margin: 0 }}>Connexion et inscription citoyenne</h1>
-          </div>
-          <Link href='/' style={{ textDecoration: 'none', color: '#334155', fontWeight: 600 }}>Retour accueil</Link>
-        </div>
-
-        <div style={{ display: 'flex', gap: 12, marginTop: 24, marginBottom: 20, flexWrap: 'wrap' }}>
-          <button onClick={() => setMode('login')} style={{ background: mode === 'login' ? '#1d4ed8' : '#fff', color: mode === 'login' ? '#fff' : '#334155', border: '1px solid #cbd5e1', padding: '10px 14px', borderRadius: 999, fontWeight: 700 }}>
-            Connexion
-          </button>
-          <button onClick={() => setMode('register')} style={{ background: mode === 'register' ? '#1d4ed8' : '#fff', color: mode === 'register' ? '#fff' : '#334155', border: '1px solid #cbd5e1', padding: '10px 14px', borderRadius: 999, fontWeight: 700 }}>
-            Inscription citoyenne
-          </button>
-        </div>
-
-        {mode === 'login' ? (
-          <form onSubmit={handleLogin} style={{ display: 'grid', gap: 12 }}>
-            <input value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} placeholder='Email' style={{ padding: 12, borderRadius: 10, border: '1px solid #cbd5e1' }} />
-            <input type='password' value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} placeholder='Mot de passe' style={{ padding: 12, borderRadius: 10, border: '1px solid #cbd5e1' }} />
-            <button type='submit' style={{ background: '#1d4ed8', color: '#fff', padding: '14px 18px', borderRadius: 12, border: 'none', fontWeight: 700 }}>
-              Se connecter
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={handleRegister} style={{ display: 'grid', gap: 12 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <input value={registerForm.firstName} onChange={(e) => setRegisterForm({ ...registerForm, firstName: e.target.value })} placeholder='Prenom' style={{ padding: 12, borderRadius: 10, border: '1px solid #cbd5e1' }} />
-              <input value={registerForm.lastName} onChange={(e) => setRegisterForm({ ...registerForm, lastName: e.target.value })} placeholder='Nom' style={{ padding: 12, borderRadius: 10, border: '1px solid #cbd5e1' }} />
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center px-4 py-8">
+      <div className="w-full max-w-2xl">
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Colonne gauche: Formulaire */}
+          <div className="card shadow-lg">
+            <div className="mb-6">
+              <div className="text-primary font-bold text-lg mb-2">{siteConfig.municipality}</div>
+              <h1 className="text-2xl font-bold text-slate-900">
+                {mode === "login" ? "Connexion" : "Inscription Citoyenne"}
+              </h1>
+              <p className="text-slate-600 text-sm mt-1">
+                {mode === "login"
+                  ? "Accédez à votre espace personnel"
+                  : "Créez votre compte pour accéder aux services"}
+              </p>
             </div>
-            <input value={registerForm.email} onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })} placeholder='Email' style={{ padding: 12, borderRadius: 10, border: '1px solid #cbd5e1' }} />
-            <input type='password' value={registerForm.password} onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })} placeholder='Mot de passe' style={{ padding: 12, borderRadius: 10, border: '1px solid #cbd5e1' }} />
-            <button type='submit' style={{ background: '#0f766e', color: '#fff', padding: '14px 18px', borderRadius: 12, border: 'none', fontWeight: 700 }}>
-              Creer mon compte citoyen
-            </button>
-          </form>
-        )}
 
-        <p style={{ color: '#475569', marginTop: 14 }}>{status}</p>
+            {/* Onglets */}
+            <div className="flex gap-2 mb-6 border-b border-slate-200">
+              <button
+                onClick={() => {
+                  setMode("login");
+                  setErrors({});
+                }}
+                className={`pb-3 px-1 font-semibold text-sm transition-colors ${
+                  mode === "login"
+                    ? "text-primary border-b-2 border-primary"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <LogIn className="inline w-4 h-4 mr-2" />
+                Connexion
+              </button>
+              <button
+                onClick={() => {
+                  setMode("register");
+                  setErrors({});
+                }}
+                className={`pb-3 px-1 font-semibold text-sm transition-colors ${
+                  mode === "register"
+                    ? "text-primary border-b-2 border-primary"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <UserPlus className="inline w-4 h-4 mr-2" />
+                Inscription
+              </button>
+            </div>
 
-        <div style={{ marginTop: 20, padding: 16, borderRadius: 12, background: '#eff6ff', color: '#1e3a8a' }}>
-          <strong>Comptes de demonstration</strong>
-          <ul style={{ paddingLeft: 18, marginBottom: 0 }}>
-            {demoUsers.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
+            <FormError errors={errors} />
+
+            {mode === "login" ? (
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={loginForm.email}
+                    onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                    placeholder="votre@email.com"
+                    className="input-field"
+                    disabled={isLoading}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Mot de passe</label>
+                  <input
+                    type="password"
+                    value={loginForm.password}
+                    onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                    placeholder="••••••••"
+                    className="input-field"
+                    disabled={isLoading}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? "Connexion en cours..." : "Se connecter"}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleRegister} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Prénom</label>
+                    <input
+                      type="text"
+                      value={registerForm.firstName}
+                      onChange={(e) => setRegisterForm({ ...registerForm, firstName: e.target.value })}
+                      placeholder="Jean"
+                      className="input-field"
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Nom</label>
+                    <input
+                      type="text"
+                      value={registerForm.lastName}
+                      onChange={(e) => setRegisterForm({ ...registerForm, lastName: e.target.value })}
+                      placeholder="Dupont"
+                      className="input-field"
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={registerForm.email}
+                    onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
+                    placeholder="votre@email.com"
+                    className="input-field"
+                    disabled={isLoading}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Mot de passe</label>
+                  <input
+                    type="password"
+                    value={registerForm.password}
+                    onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
+                    placeholder="••••••••"
+                    className="input-field"
+                    disabled={isLoading}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Confirmer le mot de passe</label>
+                  <input
+                    type="password"
+                    value={registerForm.passwordConfirm}
+                    onChange={(e) => setRegisterForm({ ...registerForm, passwordConfirm: e.target.value })}
+                    placeholder="••••••••"
+                    className="input-field"
+                    disabled={isLoading}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="btn-secondary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? "Création en cours..." : "Créer mon compte"}
+                </button>
+              </form>
+            )}
+
+            <div className="mt-6 text-center">
+              <Link href="/" className="text-sm text-primary hover:underline font-medium">
+                ← Retour à l'accueil
+              </Link>
+            </div>
+          </div>
+
+          {/* Colonne droite: Comptes de démonstration */}
+          <div className="hidden md:flex flex-col justify-center">
+            <div className="card bg-blue-50 border-blue-200">
+              <h3 className="font-bold text-lg text-blue-900 mb-4">Comptes de Démonstration</h3>
+              <div className="space-y-3">
+                {demoUsers.map((user, idx) => (
+                  <div key={idx} className="bg-white rounded-lg p-3 border border-blue-100">
+                    <p className="text-xs text-slate-600 font-medium mb-1">
+                      <span className="badge badge-primary">{user.role}</span>
+                    </p>
+                    <p className="text-sm font-mono text-slate-900 break-all">{user.email}</p>
+                    <p className="text-xs text-slate-500 mt-1">Mot de passe: {user.password}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-blue-800 mt-4 p-3 bg-blue-100 rounded-lg">
+                ℹ️ Ces comptes sont fournis à titre de démonstration. Utilisez-les pour explorer l'application.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </main>
