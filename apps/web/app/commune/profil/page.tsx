@@ -1,66 +1,175 @@
 "use client";
 
-import Link from 'next/link';
-import { ProtectedView } from '../../../components/ProtectedView';
-import { useSessionContext } from '../../../components/SessionProvider';
-
-const profileBlocks = [
-  { title: 'Identite', key: 'identity', help: 'Informations principales rattachees au compte citoyen.' },
-  { title: 'Roles et droits', key: 'roles', help: 'Roles actifs pour determiner les acces dans le portail.' },
-  { title: 'Securite du compte', key: 'security', help: 'Base pour la future gestion du mot de passe et des preferences de session.' },
-];
+import { useState } from "react";
+import { User, Mail, Phone, MapPin, Save, Edit2, Lock } from "lucide-react";
+import { ProtectedView } from "../../../components/ProtectedView";
+import { Button } from "../../../components/ui/Button";
+import { Input } from "../../../components/ui/Input";
+import { Card, CardBody, CardHeader } from "../../../components/ui/Card";
+import { PageHeader } from "../../../components/ui/PageHeader";
+import { Alert } from "../../../components/ui/Alert";
+import { Badge } from "../../../components/ui/Badge";
+import { useSessionContext } from "../../../components/SessionProvider";
 
 export default function ProfilPage() {
   const { user } = useSessionContext();
-  const roleCodes = user?.roleCodes || [];
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: user?.firstName || "",
+    lastName: user?.lastName || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+    address: "",
+  });
+
+  const handleSave = () => {
+    // TODO: Implement profile update API call
+    setIsEditing(false);
+  };
 
   return (
     <ProtectedView>
-      <main style={{ background: '#f8fafc', minHeight: '100vh', color: '#0f172a', padding: '34px 20px 58px' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gap: 24 }}>
-          <section style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1d4ed8 60%, #0ea5e9 100%)', color: '#fff', borderRadius: 26, padding: 30 }}>
-            <div style={{ display: 'inline-block', padding: '8px 14px', borderRadius: 999, background: 'rgba(255,255,255,0.14)', fontWeight: 800, marginBottom: 14 }}>
-              Espace citoyen · Profil
-            </div>
-            <h1 style={{ fontSize: 38, lineHeight: 1.1, margin: 0 }}>Mon profil citoyen</h1>
-            <p style={{ lineHeight: 1.75, opacity: 0.95, maxWidth: 820 }}>
-              Retrouvez les informations de votre compte, vos roles actifs et les raccourcis utiles pour suivre vos demarches communales.
-            </p>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 18 }}>
-              <Link href='/commune/espace-citoyen' style={{ background: '#fff', color: '#0f172a', padding: '12px 18px', borderRadius: 12, textDecoration: 'none', fontWeight: 900 }}>Tableau de bord</Link>
-              <Link href='/commune/notifications' style={{ color: '#fff', border: '1px solid rgba(255,255,255,0.35)', padding: '12px 18px', borderRadius: 12, textDecoration: 'none', fontWeight: 900 }}>Notifications</Link>
-              <Link href='/commune/messages' style={{ color: '#fff', border: '1px solid rgba(255,255,255,0.35)', padding: '12px 18px', borderRadius: 12, textDecoration: 'none', fontWeight: 900 }}>Messages</Link>
-            </div>
-          </section>
+      <main className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-50 to-blue-50">
+        <PageHeader
+          badge="Paramètres"
+          title="Mon profil"
+          subtitle="Gérez vos informations personnelles"
+          backgroundGradient="from-primary-600 to-secondary-600"
+        />
 
-          <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 18 }}>
-            {profileBlocks.map((item) => (
-              <article key={item.key} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 20, padding: 22, boxShadow: '0 8px 24px rgba(15,23,42,0.05)' }}>
-                <h2 style={{ marginTop: 0, fontSize: 22 }}>{item.title}</h2>
-                <p style={{ color: '#475569', lineHeight: 1.7 }}>{item.help}</p>
-                {item.key === 'identity' ? (
-                  <div style={{ display: 'grid', gap: 8, color: '#334155' }}>
-                    <div><strong>Email :</strong> {user?.email || 'Non disponible'}</div>
-                    <div><strong>Prenom :</strong> {user?.firstName || 'Non renseigne'}</div>
-                    <div><strong>Nom :</strong> {user?.lastName || 'Non renseigne'}</div>
-                    <div><strong>Type :</strong> {user?.userType || 'citizen'}</div>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Sidebar */}
+            <div className="md:col-span-1">
+              <Card elevated>
+                <CardBody className="text-center">
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-r from-primary-500 to-secondary-500 flex items-center justify-center text-white mx-auto mb-4">
+                    <User className="w-10 h-10" />
                   </div>
-                ) : null}
-                {item.key === 'roles' ? (
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    {(roleCodes.length ? roleCodes : ['citizen']).map((role) => (
-                      <span key={role} style={{ background: '#eff6ff', color: '#1e3a8a', border: '1px solid #bfdbfe', borderRadius: 999, padding: '7px 11px', fontWeight: 800 }}>{role}</span>
-                    ))}
+                  <h3 className="text-lg font-bold text-slate-900">
+                    {user?.firstName} {user?.lastName}
+                  </h3>
+                  <p className="text-sm text-slate-600 mt-1">{user?.email}</p>
+                  <div className="mt-4 pt-4 border-t border-slate-200">
+                    <p className="text-xs font-semibold text-slate-600 uppercase">Type d'utilisateur</p>
+                    <p className="text-sm font-medium text-slate-900 mt-1">
+                      {user?.userType === "citizen" ? "Citoyen" : "Agent"}
+                    </p>
                   </div>
-                ) : null}
-                {item.key === 'security' ? (
-                  <p style={{ color: '#64748b', lineHeight: 1.7, marginBottom: 0 }}>
-                    La modification du mot de passe et les preferences de notification seront raccordees dans un batch dedie, avec verification backend.
-                  </p>
-                ) : null}
-              </article>
-            ))}
-          </section>
+                  {user?.roleCodes && user.roleCodes.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-slate-200">
+                      <p className="text-xs font-semibold text-slate-600 uppercase mb-2">Rôles</p>
+                      <div className="flex flex-wrap gap-2 justify-center">
+                        {user.roleCodes.map((role) => (
+                          <Badge key={role} variant="primary">
+                            {role}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CardBody>
+              </Card>
+            </div>
+
+            {/* Main Content */}
+            <div className="md:col-span-2 space-y-6">
+              {/* Personal Information */}
+              <Card elevated>
+                <CardHeader className="flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-slate-900">Informations personnelles</h2>
+                  <Button
+                    variant={isEditing ? "secondary" : "primary"}
+                    size="sm"
+                    icon={isEditing ? <Save className="w-4 h-4" /> : <Edit2 className="w-4 h-4" />}
+                    onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
+                  >
+                    {isEditing ? "Enregistrer" : "Modifier"}
+                  </Button>
+                </CardHeader>
+
+                <CardBody className="space-y-6">
+                  {!isEditing && (
+                    <Alert variant="info" title="Mode lecture">
+                      Cliquez sur "Modifier" pour mettre à jour vos informations.
+                    </Alert>
+                  )}
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <Input
+                      label="Prénom"
+                      value={formData.firstName}
+                      onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                      disabled={!isEditing}
+                      icon={<User className="w-4 h-4" />}
+                    />
+                    <Input
+                      label="Nom"
+                      value={formData.lastName}
+                      onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                      disabled={!isEditing}
+                    />
+                  </div>
+
+                  <Input
+                    label="Email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    disabled={!isEditing}
+                    icon={<Mail className="w-4 h-4" />}
+                  />
+
+                  <Input
+                    label="Téléphone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    disabled={!isEditing}
+                    icon={<Phone className="w-4 h-4" />}
+                  />
+
+                  <Input
+                    label="Adresse"
+                    value={formData.address}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                    disabled={!isEditing}
+                    icon={<MapPin className="w-4 h-4" />}
+                  />
+
+                  {isEditing && (
+                    <div className="flex gap-3 pt-4">
+                      <Button variant="primary" onClick={handleSave}>
+                        Enregistrer les modifications
+                      </Button>
+                      <Button variant="ghost" onClick={() => setIsEditing(false)}>
+                        Annuler
+                      </Button>
+                    </div>
+                  )}
+                </CardBody>
+              </Card>
+
+              {/* Security Section */}
+              <Card elevated>
+                <CardHeader>
+                  <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <Lock className="w-5 h-5" />
+                    Sécurité
+                  </h3>
+                </CardHeader>
+                <CardBody className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                    <div>
+                      <p className="font-medium text-slate-900">Mot de passe</p>
+                      <p className="text-sm text-slate-600">Changez votre mot de passe régulièrement</p>
+                    </div>
+                    <Button variant="outline">Modifier</Button>
+                  </div>
+                </CardBody>
+              </Card>
+            </div>
+          </div>
         </div>
       </main>
     </ProtectedView>
