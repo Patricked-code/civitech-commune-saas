@@ -43,7 +43,14 @@ module.exports = {
           800: '#92400e',
           900: '#78350f',
         },
-      },
+        // Couleurs Néon Futuristes
+        neon: {
+          cyan: '#06b6d4',
+          violet: '#8b5cf6',
+          pink: '#ec4899',
+          green: '#10b981',
+        },
+      }
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         display: ['Poppins', 'system-ui', 'sans-serif'],
@@ -118,6 +125,9 @@ module.exports = {
         'inner': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.05)',
         'glow': '0 0 20px rgba(14, 165, 233, 0.5)',
         'glow-lg': '0 0 40px rgba(14, 165, 233, 0.3)',
+        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+        'neon-cyan': '0 0 15px rgba(6, 182, 212, 0.5)',
+        'neon-violet': '0 0 15px rgba(139, 92, 246, 0.5)',
       },
       backdropBlur: {
         xs: '2px',
