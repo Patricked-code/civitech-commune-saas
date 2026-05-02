@@ -1,45 +1,199 @@
 "use client";
 
-import Link from 'next/link';
-import { ProtectedView } from '../../../components/ProtectedView';
+import { useState } from "react";
+import { Bell, CheckCircle, AlertCircle, Info, Trash2 } from "lucide-react";
+import { ProtectedView } from "../../../components/ProtectedView";
+import { Button } from "../../../components/ui/Button";
+import { Card, CardBody } from "../../../components/ui/Card";
+import { PageHeader } from "../../../components/ui/PageHeader";
+import { Badge } from "../../../components/ui/Badge";
+import { Dropdown } from "../../../components/ui/Dropdown";
 
-const notifications = [
-  { title: 'Dossier soumis', level: 'Information', text: 'Votre dossier a ete enregistre et transmis au service communal concerne.', status: 'prepare' },
-  { title: 'Piece a verifier', level: 'Document', text: 'Une piece jointe pourra necessiter une verification ou une correction par le citoyen.', status: 'a venir' },
-  { title: 'Etape de traitement', level: 'Workflow', text: 'Les changements d etape seront affiches ici pour faciliter le suivi de vos demandes.', status: 'a venir' },
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: "success" | "warning" | "error" | "info";
+  timestamp: string;
+  read: boolean;
+  actionUrl?: string;
+}
+
+const mockNotifications: Notification[] = [
+  {
+    id: "1",
+    title: "Dossier approuvé",
+    message: "Votre demande de déclaration de naissance a été approuvée et est prête à être retirée.",
+    type: "success",
+    timestamp: "Il y a 2 heures",
+    read: false,
+    actionUrl: "/commune/dossier/REF-001",
+  },
+  {
+    id: "2",
+    title: "Document manquant",
+    message: "Veuillez fournir une copie de votre pièce d'identité pour continuer le traitement.",
+    type: "warning",
+    timestamp: "Il y a 5 heures",
+    read: false,
+    actionUrl: "/commune/dossier/REF-002",
+  },
+  {
+    id: "3",
+    title: "Nouvelle démarche disponible",
+    message: "Une nouvelle démarche 'Demande de certificat de résidence' est maintenant disponible.",
+    type: "info",
+    timestamp: "Il y a 1 jour",
+    read: true,
+  },
+  {
+    id: "4",
+    title: "Dossier rejeté",
+    message: "Votre dossier a été rejeté. Veuillez consulter les détails pour plus d'informations.",
+    type: "error",
+    timestamp: "Il y a 2 jours",
+    read: true,
+    actionUrl: "/commune/dossier/REF-003",
+  },
 ];
 
+const iconMap = {
+  success: <CheckCircle className="w-5 h-5 text-green-600" />,
+  warning: <AlertCircle className="w-5 h-5 text-yellow-600" />,
+  error: <AlertCircle className="w-5 h-5 text-red-600" />,
+  info: <Info className="w-5 h-5 text-blue-600" />,
+};
+
+const bgColorMap = {
+  success: "bg-green-50",
+  warning: "bg-yellow-50",
+  error: "bg-red-50",
+  info: "bg-blue-50",
+};
+
 export default function NotificationsPage() {
+  const [notifications, setNotifications] = useState(mockNotifications);
+  const [filter, setFilter] = useState("all");
+
+  const filteredNotifications = notifications.filter((n) => {
+    if (filter === "unread") return !n.read;
+    if (filter === "read") return n.read;
+    return true;
+  });
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  const handleMarkAsRead = (id: string) => {
+    setNotifications(notifications.map((n) => (n.id === id ? { ...n, read: true } : n)));
+  };
+
+  const handleDelete = (id: string) => {
+    setNotifications(notifications.filter((n) => n.id !== id));
+  };
+
+  const handleMarkAllAsRead = () => {
+    setNotifications(notifications.map((n) => ({ ...n, read: true })));
+  };
+
   return (
     <ProtectedView>
-      <main style={{ background: '#f8fafc', minHeight: '100vh', color: '#0f172a', padding: '34px 20px 58px' }}>
-        <div style={{ maxWidth: 1060, margin: '0 auto', display: 'grid', gap: 24 }}>
-          <section style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 24, padding: 28, boxShadow: '0 10px 30px rgba(15,23,42,0.06)' }}>
-            <div style={{ color: '#1d4ed8', fontWeight: 900, marginBottom: 8 }}>Espace citoyen</div>
-            <h1 style={{ margin: 0, fontSize: 38 }}>Notifications</h1>
-            <p style={{ color: '#475569', lineHeight: 1.7, maxWidth: 820 }}>
-              Cet espace prepare les alertes liees aux dossiers, aux pieces justificatives, aux messages mairie et aux changements de statut.
-            </p>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 18 }}>
-              <Link href='/commune/espace-citoyen' style={{ background: '#1d4ed8', color: '#fff', padding: '12px 18px', borderRadius: 12, textDecoration: 'none', fontWeight: 900 }}>Tableau de bord</Link>
-              <Link href='/commune/messages' style={{ color: '#1d4ed8', border: '1px solid #bfdbfe', padding: '12px 18px', borderRadius: 12, textDecoration: 'none', fontWeight: 900 }}>Messages</Link>
-            </div>
-          </section>
+      <main className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-50 to-blue-50">
+        <PageHeader
+          badge="Alertes et mises à jour"
+          title="Notifications"
+          subtitle={`Vous avez ${unreadCount} notification${unreadCount > 1 ? "s" : ""} non lue${unreadCount > 1 ? "s" : ""}`}
+          backgroundGradient="from-primary-600 to-secondary-600"
+        />
 
-          <section style={{ display: 'grid', gap: 16 }}>
-            {notifications.map((item) => (
-              <article key={item.title} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 18, padding: 22, display: 'grid', gap: 8 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-                  <div>
-                    <div style={{ color: '#64748b', fontSize: 13, fontWeight: 900, textTransform: 'uppercase' }}>{item.level}</div>
-                    <h2 style={{ margin: '4px 0 0', fontSize: 22 }}>{item.title}</h2>
-                  </div>
-                  <span style={{ background: item.status === 'prepare' ? '#dcfce7' : '#eff6ff', color: item.status === 'prepare' ? '#166534' : '#1e3a8a', borderRadius: 999, padding: '8px 12px', fontWeight: 900 }}>{item.status}</span>
-                </div>
-                <p style={{ color: '#475569', lineHeight: 1.7, margin: 0 }}>{item.text}</p>
-              </article>
-            ))}
-          </section>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          {/* Toolbar */}
+          <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+            <div className="flex gap-2">
+              <Dropdown
+                trigger={<span className="font-medium">Filtrer</span>}
+                items={[
+                  { label: "Toutes les notifications", value: "all" },
+                  { label: "Non lues", value: "unread" },
+                  { label: "Lues", value: "read" },
+                ]}
+                onSelect={setFilter}
+              />
+            </div>
+            {unreadCount > 0 && (
+              <Button variant="outline" size="sm" onClick={handleMarkAllAsRead}>
+                Marquer tout comme lu
+              </Button>
+            )}
+          </div>
+
+          {/* Notifications List */}
+          <div className="space-y-3">
+            {filteredNotifications.length === 0 ? (
+              <Card>
+                <CardBody className="text-center py-12">
+                  <Bell className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                  <p className="text-slate-600">Aucune notification à afficher</p>
+                </CardBody>
+              </Card>
+            ) : (
+              filteredNotifications.map((notification) => (
+                <Card
+                  key={notification.id}
+                  className={`${bgColorMap[notification.type]} ${!notification.read ? "border-l-4 border-l-primary-600" : ""}`}
+                >
+                  <CardBody>
+                    <div className="flex items-start gap-4">
+                      {/* Icon */}
+                      <div className="flex-shrink-0 mt-1">{iconMap[notification.type]}</div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-2 flex-wrap">
+                          <div>
+                            <h3 className="font-semibold text-slate-900">{notification.title}</h3>
+                            <p className="text-sm text-slate-600 mt-1">{notification.message}</p>
+                          </div>
+                          {!notification.read && (
+                            <Badge variant="primary" className="flex-shrink-0">
+                              Nouveau
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-slate-500">{notification.timestamp}</p>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex-shrink-0 flex gap-2">
+                        {notification.actionUrl && (
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => (window.location.href = notification.actionUrl!)}
+                          >
+                            Voir
+                          </Button>
+                        )}
+                        {!notification.read && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            icon={<CheckCircle className="w-4 h-4" />}
+                            onClick={() => handleMarkAsRead(notification.id)}
+                          />
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          icon={<Trash2 className="w-4 h-4" />}
+                          onClick={() => handleDelete(notification.id)}
+                        />
+                      </div>
+                    </div>
+                  </CardBody>
+                </Card>
+              ))
+            )}
+          </div>
         </div>
       </main>
     </ProtectedView>

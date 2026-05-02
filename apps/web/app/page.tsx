@@ -1,98 +1,321 @@
+'use client';
+
 import Link from 'next/link';
-import { siteConfig } from '../lib/site';
-
-const highlights = [
-  { title: 'Demarches en ligne', text: 'Deposer une demande, reprendre un brouillon et suivre l avancement depuis un espace citoyen.' },
-  { title: 'Services municipaux', text: 'Structurer l accueil, l etat civil, les documents utiles et les circuits de traitement.' },
-  { title: 'Cockpit mairie', text: 'Donner aux agents une vision claire des dossiers, priorites, documents et actions a mener.' },
-  { title: 'Socle SaaS', text: 'Preparer une base reutilisable pour d autres communes avec branding et parametrage.' },
-];
-
-const citizenSteps = [
-  'Creer un compte citoyen',
-  'Choisir une demarche',
-  'Enregistrer ou soumettre le dossier',
-  'Suivre le traitement en ligne',
-];
-
-const priorityLinks = [
-  { href: '/commune/demarches/declaration-naissance', label: 'Declaration de naissance' },
-  { href: '/commune/demarches/demande-copie-acte', label: 'Demande de copie d acte' },
-  { href: '/commune/demarches/declaration-deces', label: 'Declaration de deces' },
-  { href: '/commune/demarches/organisation-mariage', label: 'Organisation de mariage' },
-];
+import { ArrowRight, FileText, CheckCircle, Lock, Building2, Users, BarChart3 } from 'lucide-react';
 
 export default function HomePage() {
+  const features = [
+    {
+      icon: FileText,
+      title: 'Démarches en ligne',
+      description: 'Effectuez toutes vos démarches administratives en ligne, 24h/24 et 7j/7, depuis chez vous.',
+      color: 'text-blue-600',
+    },
+    {
+      icon: CheckCircle,
+      title: 'Suivi en temps réel',
+      description: 'Suivez l\'avancement de vos demandes en temps réel et recevez des notifications à chaque étape.',
+      color: 'text-teal-600',
+    },
+    {
+      icon: Lock,
+      title: 'Sécurisé et confidentiel',
+      description: 'Vos données sont protégées et traitées en toute confidentialité conformément aux normes en vigueur.',
+      color: 'text-amber-600',
+    },
+  ];
+
+  const steps = [
+    {
+      number: 1,
+      icon: Users,
+      title: 'Créer un compte',
+      description: 'Inscrivez-vous en quelques minutes avec votre email.',
+    },
+    {
+      number: 2,
+      icon: FileText,
+      title: 'Remplir le formulaire',
+      description: 'Complétez votre demande en ligne en toute simplicité.',
+    },
+    {
+      number: 3,
+      icon: ArrowRight,
+      title: 'Soumettre',
+      description: 'Envoyez votre demande en toute sécurité.',
+    },
+    {
+      number: 4,
+      icon: BarChart3,
+      title: 'Suivre votre dossier',
+      description: 'Suivez l\'avancement de votre dossier en temps réel.',
+    },
+  ];
+
+  const procedures = [
+    { title: 'Déclaration de naissance', href: '/commune/demarches/declaration-naissance' },
+    { title: 'Demande de copie d\'acte', href: '/commune/demarches/demande-copie-acte' },
+    { title: 'Déclaration de décès', href: '/commune/demarches/declaration-deces' },
+    { title: 'Organisation de mariage', href: '/commune/demarches/organisation-mariage' },
+  ];
+
   return (
-    <main style={{ minHeight: '100vh', background: '#f8fafc', color: '#0f172a' }}>
-      <section style={{ padding: '76px 24px 58px', background: 'radial-gradient(circle at top left, rgba(56,189,248,0.35), transparent 32%), linear-gradient(135deg, #0f172a 0%, #1d4ed8 58%, #38bdf8 100%)', color: '#fff' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: 'minmax(0, 1.35fr) minmax(280px, 0.65fr)', gap: 28, alignItems: 'center' }}>
-          <div>
-            <div style={{ display: 'inline-block', padding: '8px 14px', borderRadius: 999, background: 'rgba(255,255,255,0.14)', fontSize: 14, fontWeight: 800, marginBottom: 18 }}>
-              {siteConfig.municipality} · Portail public et services municipaux
+    <main className="min-h-screen bg-white">
+      {/* Navigation */}
+      <nav className="sticky top-0 z-50 bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center gap-3">
+              <Building2 className="w-8 h-8 text-blue-600" />
+              <span className="text-xl font-bold text-gray-900">CiviTech Commune</span>
             </div>
-            <h1 style={{ fontSize: 54, lineHeight: 1.04, margin: 0, maxWidth: 920 }}>Une mairie plus accessible, des demarches plus simples, un suivi plus clair</h1>
-            <p style={{ fontSize: 18, lineHeight: 1.75, opacity: 0.95, marginTop: 20, maxWidth: 820 }}>
-              Le portail numerique de Niakara rassemble les informations publiques, les demarches citoyennes, le suivi des dossiers et les outils de pilotage des services municipaux dans une experience moderne et progressive.
-            </p>
-            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 28 }}>
-              <Link href='/commune/demarches' style={{ background: '#fff', color: '#0f172a', padding: '14px 22px', borderRadius: 12, textDecoration: 'none', fontWeight: 800 }}>
-                Demarrer une demarche
-              </Link>
-              <Link href='/commune' style={{ background: 'transparent', color: '#fff', padding: '14px 22px', borderRadius: 12, textDecoration: 'none', border: '1px solid rgba(255,255,255,0.35)', fontWeight: 800 }}>
-                Decouvrir le portail
-              </Link>
-              <Link href='/auth/login' style={{ background: 'rgba(15,23,42,0.28)', color: '#fff', padding: '14px 22px', borderRadius: 12, textDecoration: 'none', border: '1px solid rgba(255,255,255,0.22)', fontWeight: 800 }}>
-                Connexion citoyenne
-              </Link>
+            <div className="hidden md:flex items-center gap-8">
+              <a href="#" className="text-gray-700 hover:text-blue-600 transition">Accueil</a>
+              <a href="#" className="text-gray-700 hover:text-blue-600 transition">Fonctionnalités</a>
+              <a href="#" className="text-gray-700 hover:text-blue-600 transition">Pour les citoyens</a>
+              <a href="#" className="text-gray-700 hover:text-blue-600 transition">Pour les communes</a>
+              <a href="#" className="text-gray-700 hover:text-blue-600 transition">Tarifs</a>
+              <a href="#" className="text-gray-700 hover:text-blue-600 transition">Contact</a>
             </div>
+            <Link href="/auth/login" className="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition">
+              Connexion
+            </Link>
           </div>
-
-          <aside style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.22)', borderRadius: 24, padding: 24, backdropFilter: 'blur(10px)' }}>
-            <div style={{ fontWeight: 900, fontSize: 18 }}>Parcours citoyen</div>
-            <div style={{ display: 'grid', gap: 12, marginTop: 16 }}>
-              {citizenSteps.map((step, index) => (
-                <div key={step} style={{ display: 'grid', gridTemplateColumns: '34px 1fr', gap: 12, alignItems: 'center' }}>
-                  <span style={{ width: 34, height: 34, borderRadius: 999, background: '#fff', color: '#1d4ed8', display: 'grid', placeItems: 'center', fontWeight: 900 }}>{index + 1}</span>
-                  <span style={{ fontWeight: 700 }}>{step}</span>
-                </div>
-              ))}
-            </div>
-          </aside>
         </div>
-      </section>
+      </nav>
 
-      <section style={{ maxWidth: 1200, margin: '0 auto', padding: '38px 24px 18px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 18 }}>
-          {highlights.map((item) => (
-            <article key={item.title} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 20, padding: 22, boxShadow: '0 8px 24px rgba(15,23,42,0.05)' }}>
-              <h2 style={{ marginTop: 0, fontSize: 22 }}>{item.title}</h2>
-              <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: 0 }}>{item.text}</p>
-            </article>
-          ))}
+      {/* Hero Section */}
+      <section className="relative bg-gradient-to-r from-blue-600 via-blue-500 to-teal-500 text-white overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full mix-blend-multiply filter blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-white rounded-full mix-blend-multiply filter blur-3xl"></div>
         </div>
-      </section>
-
-      <section style={{ maxWidth: 1200, margin: '0 auto', padding: '18px 24px 58px' }}>
-        <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 24, padding: 28, boxShadow: '0 10px 30px rgba(15,23,42,0.06)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-            <div>
-              <h2 style={{ margin: 0, fontSize: 30 }}>Demarches prioritaires</h2>
-              <p style={{ color: '#475569', lineHeight: 1.7, maxWidth: 760 }}>
-                Les premiers parcours se concentrent sur l etat civil afin de construire une base fiable avant l extension vers d autres services municipaux.
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
+            {/* Left Content */}
+            <div className="lg:col-span-2">
+              <h1 className="text-5xl sm:text-6xl font-bold leading-tight mb-6">
+                CiviTech Commune
+              </h1>
+              <p className="text-2xl font-semibold mb-4 text-blue-100">
+                Simplifiez vos démarches administratives
               </p>
+              <p className="text-lg text-blue-50 mb-8 max-w-2xl leading-relaxed">
+                LA plateforme tout-en-un pour effectuer vos démarches en ligne simplement, suivre vos demandes en temps réel et échanger avec votre commune en toute sécurité.
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <Link href="/commune/demarches" className="inline-flex items-center gap-2 px-8 py-3 bg-white text-blue-600 rounded-full font-bold hover:bg-blue-50 transition">
+                  Commencer <ArrowRight className="w-5 h-5" />
+                </Link>
+                <Link href="/commune" className="inline-flex items-center gap-2 px-8 py-3 border-2 border-white text-white rounded-full font-bold hover:bg-white/10 transition">
+                  En savoir plus <ArrowRight className="w-5 h-5" />
+                </Link>
+              </div>
             </div>
-            <Link href='/commune/espace-citoyen' style={{ color: '#1d4ed8', fontWeight: 900, textDecoration: 'none' }}>Ouvrir mon espace citoyen</Link>
+
+            {/* Right Sidebar - Citizen Preview */}
+            <div className="hidden lg:block">
+              <div className="bg-white rounded-2xl shadow-2xl p-6 text-gray-900 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Building2 className="w-5 h-5 text-blue-600" />
+                    <span className="font-semibold text-sm">Bienvenue sur CiviTech</span>
+                  </div>
+                  <div className="w-8 h-8 rounded-full bg-gray-300"></div>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="text-sm">
+                    <p className="font-bold text-lg">3</p>
+                    <p className="text-gray-600">Mes démarches en cours</p>
+                  </div>
+                  <div className="text-sm">
+                    <p className="font-bold text-lg">1</p>
+                    <p className="text-gray-600">En attente</p>
+                  </div>
+                  <div className="text-sm">
+                    <p className="font-bold text-lg">2</p>
+                    <p className="text-gray-600">Terminées</p>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t space-y-2">
+                  <p className="text-xs text-gray-600">Demandes récentes</p>
+                  <div className="text-xs space-y-2">
+                    <p className="text-blue-600">• Demande de certificat de résidence</p>
+                    <p className="text-amber-600">• Inscription scolaire</p>
+                    <p className="text-teal-600">• Demande d\'acte de naissance</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14, marginTop: 10 }}>
-            {priorityLinks.map((item) => (
-              <Link key={item.href} href={item.href} style={{ border: '1px solid #dbeafe', background: '#eff6ff', borderRadius: 16, padding: 18, color: '#1e3a8a', textDecoration: 'none', fontWeight: 900 }}>
-                {item.label}
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {features.map((feature) => {
+              const Icon = feature.icon;
+              return (
+                <div key={feature.title} className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition">
+                  <div className={`w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center mb-4 ${feature.color}`}>
+                    <Icon className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
+                  <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Steps Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-4xl font-bold text-center text-gray-900 mb-16">
+            Votre parcours citoyen en 4 étapes
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {steps.map((step, index) => {
+              const Icon = step.icon;
+              return (
+                <div key={step.number} className="relative">
+                  {/* Connector Line */}
+                  {index < steps.length - 1 && (
+                    <div className="hidden md:block absolute top-12 left-1/2 w-full h-1 bg-gradient-to-r from-blue-300 to-transparent"></div>
+                  )}
+                  
+                  <div className="relative bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition">
+                    <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold mb-4">
+                      {step.number}
+                    </div>
+                    <Icon className="w-6 h-6 text-blue-600 mb-3" />
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">{step.title}</h3>
+                    <p className="text-gray-600 text-sm">{step.description}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Procedures Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">Démarches prioritaires</h2>
+          <p className="text-gray-600 mb-12 max-w-2xl">
+            Les premiers parcours se concentrent sur l\'état civil afin de construire une base fiable avant l\'extension vers d\'autres services municipaux.
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {procedures.map((proc) => (
+              <Link key={proc.href} href={proc.href}>
+                <div className="bg-white border-2 border-blue-200 rounded-xl p-6 hover:border-blue-400 hover:bg-blue-50 transition cursor-pointer">
+                  <p className="font-bold text-gray-900">{proc.title}</p>
+                </div>
               </Link>
             ))}
           </div>
+
+          <Link href="/commune/espace-citoyen" className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition">
+            Ouvrir mon espace citoyen <ArrowRight className="w-5 h-5" />
+          </Link>
         </div>
       </section>
+
+      {/* CTA Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-blue-600 text-white">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-4xl font-bold mb-4">Prêt à commencer ?</h2>
+          <p className="text-xl text-blue-100 mb-8">
+            Créez votre compte citoyen et accédez à tous les services municipaux en quelques clics.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/auth/login" className="px-8 py-3 bg-white text-blue-600 rounded-lg font-bold hover:bg-gray-100 transition">
+              Se connecter
+            </Link>
+            <Link href="/commune/demarches" className="px-8 py-3 border-2 border-white text-white rounded-lg font-bold hover:bg-white/10 transition">
+              Consulter les démarches
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-gray-300 py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-8 mb-12">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Building2 className="w-6 h-6 text-blue-400" />
+                <span className="font-bold text-white">CiviTech Commune</span>
+              </div>
+              <p className="text-sm text-gray-400">
+                La plateforme numérique au service des citoyens et des communes.
+              </p>
+            </div>
+            
+            <div>
+              <h4 className="font-bold text-white mb-4">Plateforme</h4>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#" className="hover:text-blue-400 transition">Fonctionnalités</a></li>
+                <li><a href="#" className="hover:text-blue-400 transition">Tarifs</a></li>
+                <li><a href="#" className="hover:text-blue-400 transition">Sécurité</a></li>
+                <li><a href="#" className="hover:text-blue-400 transition">Accessibilité</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-white mb-4">Pour les citoyens</h4>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#" className="hover:text-blue-400 transition">Démarches en ligne</a></li>
+                <li><a href="#" className="hover:text-blue-400 transition">Questions fréquentes</a></li>
+                <li><a href="#" className="hover:text-blue-400 transition">Aide et support</a></li>
+                <li><a href="#" className="hover:text-blue-400 transition">Actualités</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-white mb-4">Pour les communes</h4>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#" className="hover:text-blue-400 transition">Solutions</a></li>
+                <li><a href="#" className="hover:text-blue-400 transition">Accompagnement</a></li>
+                <li><a href="#" className="hover:text-blue-400 transition">Ressources</a></li>
+                <li><a href="#" className="hover:text-blue-400 transition">Devenir partenaire</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-white mb-4">À propos</h4>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#" className="hover:text-blue-400 transition">Qui sommes-nous ?</a></li>
+                <li><a href="#" className="hover:text-blue-400 transition">Nos engagements</a></li>
+                <li><a href="#" className="hover:text-blue-400 transition">Carrières</a></li>
+                <li><a href="#" className="hover:text-blue-400 transition">Contact</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-800 pt-8">
+            <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
+              <p>© 2024 CiviTech Commune – Tous droits réservés</p>
+              <div className="flex gap-6 mt-4 md:mt-0">
+                <a href="#" className="hover:text-blue-400 transition">Mentions légales</a>
+                <a href="#" className="hover:text-blue-400 transition">Politique de confidentialité</a>
+                <a href="#" className="hover:text-blue-400 transition">CGU</a>
+                <a href="#" className="hover:text-blue-400 transition">Cookies</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }

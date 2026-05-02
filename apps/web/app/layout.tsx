@@ -4,6 +4,7 @@ import { MainNav } from '../components/MainNav';
 import { SessionProvider } from '../components/SessionProvider';
 import { CanonicalHostRedirect } from '../components/CanonicalHostRedirect';
 import { SiteFooter } from '../components/SiteFooter';
+import { ToastContainer } from '../components/Toast';
 import { siteConfig } from '../lib/site';
 
 export const metadata = {
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <MainNav />
           {children}
           <SiteFooter />
+          <ToastContainer />
         </SessionProvider>
       </body>
     </html>
