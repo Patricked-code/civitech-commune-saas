@@ -1,10 +1,9 @@
 const { getPrismaClient } = require('../db/prisma');
-const { dossiers } = require('../data/seedData');
 const { findProcedureByCode } = require('./procedure-lookup.repository');
 
 async function listDossiers() {
   const prisma = getPrismaClient();
-  if (!prisma) return dossiers;
+  if (!prisma) throw new Error('Database connection required');
 
   const records = await prisma.dossier.findMany({
     include: { procedure: true, citizenUser: true, documents: true },
@@ -27,13 +26,33 @@ async function listDossiers() {
 }
 
 async function listDossiersByCitizenUserId(citizenUserId) {
-  const all = await listDossiers();
-  return all.filter((item) => item.citizenUserId === citizenUserId || !item.citizenUserId);
+  const prisma = getPrismaClient();
+  if (!prisma) throw new Error('Database connection required');
+
+  const records = await prisma.dossier.findMany({
+    where: { citizenUserId },
+    include: { procedure: true, citizenUser: true, documents: true },
+    orderBy: { createdAt: 'asc' },
+  });
+
+  return records.map((record) => ({
+    reference: record.reference,
+    procedureId: record.procedureId,
+    procedureCode: record.procedure.code,
+    procedureTitle: record.procedure.title,
+    status: record.status.toLowerCase(),
+    progress: null,
+    currentStep: record.currentStepCode,
+    service: record.procedure.category,
+    citizenUserId: record.citizenUserId,
+    citizen: record.citizenUser ? `${record.citizenUser.firstName} ${record.citizenUser.lastName}` : null,
+    documentsCount: record.documents.length,
+  }));
 }
 
 async function findDossierByReference(reference) {
   const prisma = getPrismaClient();
-  if (!prisma) return dossiers.find((item) => item.reference === reference) || null;
+  if (!prisma) throw new Error('Database connection required');
 
   const record = await prisma.dossier.findUnique({
     where: { reference },
@@ -64,33 +83,9 @@ async function findDossierByReference(reference) {
 
 async function createDossier(payload) {
   const prisma = getPrismaClient();
-  const formData = payload.formData || {};
+  if (!prisma) throw new Error('Database connection required');
 
-  if (!prisma) {
-    const reference = 'NIC-' + new Date().getFullYear() + '-' + String(dossiers.length + 1).padStart(5, '0');
-    const dossier = {
-      reference,
-      procedureId: payload.procedureId,
-      procedureCode: payload.procedureCode || null,
-      procedureTitle: payload.procedureTitle || null,
-      citizenUserId: payload.citizenUserId,
-      status: 'draft',
-      progress: 0,
-      currentStep: 'submitted',
-      service: payload.service || 'Etat civil',
-      formData,
-      documents: [],
-      events: [
-        {
-          eventType: 'DOSSIER_DRAFT_CREATED',
-          eventLabel: 'Dossier draft created',
-          payloadJson: JSON.stringify(formData),
-        },
-      ],
-    };
-    dossiers.push(dossier);
-    return dossier;
-  }
+  const formData = payload.formData || {};
 
   let resolvedProcedureId = payload.procedureId;
   if (!resolvedProcedureId && payload.procedureCode) {
@@ -137,24 +132,9 @@ async function createDossier(payload) {
 
 async function transitionDossier(reference, payload) {
   const prisma = getPrismaClient();
+  if (!prisma) throw new Error('Database connection required');
+
   const targetStep = payload.targetStep;
-
-  if (!prisma) {
-    const dossier = dossiers.find((item) => item.reference === reference);
-    if (!dossier) return null;
-    dossier.currentStep = targetStep;
-    if (targetStep === 'submitted') dossier.status = 'submitted';
-    else if (targetStep === 'validated' || targetStep === 'issued' || targetStep === 'available') dossier.status = targetStep;
-    else dossier.status = 'in_review';
-    dossier.events = dossier.events || [];
-    dossier.events.push({
-      eventType: 'DOSSIER_STEP_CHANGED',
-      eventLabel: 'Dossier step changed',
-      payloadJson: JSON.stringify({ from: payload.fromStep, to: targetStep, comment: payload.comment || '' }),
-    });
-    return dossier;
-  }
-
   const existing = await prisma.dossier.findUnique({ where: { reference }, include: { procedure: true, events: true, documents: true } });
   if (!existing) return null;
 
@@ -202,19 +182,7 @@ async function submitDossier(reference, payload) {
 
 async function addWorkflowComment(reference, payload) {
   const prisma = getPrismaClient();
-  if (!prisma) {
-    const dossier = dossiers.find((item) => item.reference === reference);
-    if (!dossier) return null;
-    const event = {
-      id: 'evt-' + Date.now(),
-      eventType: 'WORKFLOW_COMMENT',
-      eventLabel: 'Workflow comment added',
-      payloadJson: JSON.stringify({ comment: payload.comment || '' }),
-    };
-    dossier.events = dossier.events || [];
-    dossier.events.push(event);
-    return event;
-  }
+  if (!prisma) throw new Error('Database connection required');
 
   const existing = await prisma.dossier.findUnique({ where: { reference } });
   if (!existing) return null;
@@ -231,23 +199,7 @@ async function addWorkflowComment(reference, payload) {
 
 async function addDossierAttachment(reference, payload) {
   const prisma = getPrismaClient();
-  if (!prisma) {
-    const dossier = dossiers.find((item) => item.reference === reference);
-    if (!dossier) return null;
-    dossier.documents = dossier.documents || [];
-    const document = {
-      id: 'doc-' + Date.now(),
-      documentType: payload.documentType,
-      storageKey: payload.storageKey,
-      originalFilename: payload.originalFilename,
-      mimeType: payload.mimeType,
-      validationStatus: 'PENDING',
-    };
-    dossier.documents.push(document);
-    dossier.events = dossier.events || [];
-    dossier.events.push({ eventType: 'DOCUMENT_ATTACHED', eventLabel: 'Document attached', payloadJson: JSON.stringify(document) });
-    return document;
-  }
+  if (!prisma) throw new Error('Database connection required');
 
   const existing = await prisma.dossier.findUnique({ where: { reference } });
   if (!existing) return null;
@@ -278,20 +230,7 @@ async function addDossierAttachment(reference, payload) {
 
 async function updateAttachmentStatus(reference, documentId, payload) {
   const prisma = getPrismaClient();
-  if (!prisma) {
-    const dossier = dossiers.find((item) => item.reference === reference);
-    if (!dossier || !dossier.documents) return null;
-    const document = dossier.documents.find((item) => item.id === documentId);
-    if (!document) return null;
-    document.validationStatus = payload.validationStatus;
-    dossier.events = dossier.events || [];
-    dossier.events.push({
-      eventType: 'DOCUMENT_STATUS_CHANGED',
-      eventLabel: 'Document status changed',
-      payloadJson: JSON.stringify({ documentId, validationStatus: payload.validationStatus }),
-    });
-    return document;
-  }
+  if (!prisma) throw new Error('Database connection required');
 
   const existing = await prisma.dossier.findUnique({ where: { reference } });
   if (!existing) return null;

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { siteConfig } from '../lib/site';
 import { useSessionContext } from './SessionProvider';
 import { removeToken } from '../lib/session';
+import { LogOut, User as UserIcon, ChevronRight } from 'lucide-react';
 
 type NavItem = {
   href: string;
@@ -17,23 +18,19 @@ function logout() {
 
 function NavGroup({ title, items, muted = false }: { title: string; items: NavItem[]; muted?: boolean }) {
   return (
-    <div style={{ display: 'grid', gap: 8 }}>
-      <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.6, color: '#64748b', fontWeight: 800 }}>{title}</div>
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+    <div className="grid gap-2">
+      <div className="text-[10px] uppercase tracking-wider text-slate-500 font-extrabold">{title}</div>
+      <div className="flex gap-2 flex-wrap items-center">
         {items.map((item) => (
           <Link
             key={item.href}
             href={item.href}
-            style={{
-              textDecoration: 'none',
-              color: muted ? '#475569' : '#1e293b',
-              fontWeight: muted ? 600 : 700,
-              fontSize: 14,
-              background: muted ? '#f8fafc' : '#eff6ff',
-              border: muted ? '1px solid #e5e7eb' : '1px solid #bfdbfe',
-              padding: '8px 11px',
-              borderRadius: 999,
-            }}
+            className={`
+              text-xs px-3 py-1.5 rounded-full font-bold transition-all duration-200 border
+              ${muted 
+                ? 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100' 
+                : 'bg-brand-50 text-brand-700 border-brand-100 hover:bg-brand-100 shadow-sm'}
+            `}
           >
             {item.label}
           </Link>
@@ -47,37 +44,51 @@ export function MainNav() {
   const { user } = useSessionContext();
 
   return (
-    <nav style={{ background: 'rgba(255,255,255,0.96)', borderBottom: '1px solid #e5e7eb', position: 'sticky', top: 0, zIndex: 30, backdropFilter: 'blur(12px)' }}>
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '16px 20px', display: 'grid', gap: 16 }}>
-        <div style={{ display: 'flex', gap: 16, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-          <Link href='/' style={{ textDecoration: 'none' }}>
-            <div style={{ fontWeight: 900, color: '#0f172a', fontSize: 19 }}>{siteConfig.municipality}</div>
-            <div style={{ color: '#64748b', fontSize: 13 }}>Portail public · Espace citoyen · Cockpit communal</div>
+    <nav className="bg-white/95 border-b border-slate-200 sticky top-0 z-30 backdrop-blur-md shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 grid gap-6">
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          <Link href="/" className="group">
+            <div className="font-black text-slate-900 text-xl tracking-tight group-hover:text-brand-600 transition-colors">
+              {siteConfig.municipality}
+            </div>
+            <div className="text-slate-500 text-xs font-medium">
+              Portail public · Espace citoyen · Cockpit communal
+            </div>
           </Link>
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+          
+          <div className="flex gap-3 items-center">
             {user ? (
-              <span style={{ color: '#1e3a8a', fontWeight: 800, background: '#eff6ff', border: '1px solid #bfdbfe', padding: '8px 12px', borderRadius: 999 }}>{user.email}</span>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 bg-brand-50 text-brand-700 border border-brand-100 px-3 py-2 rounded-xl text-sm font-bold">
+                  <UserIcon size={16} />
+                  <span className="hidden sm:inline">{user.email}</span>
+                </div>
+                <button 
+                  onClick={logout} 
+                  className="flex items-center gap-2 bg-white border border-slate-200 px-3 py-2 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-red-600 hover:border-red-100 transition-all"
+                >
+                  <LogOut size={16} />
+                  <span className="hidden sm:inline">Déconnexion</span>
+                </button>
+              </div>
             ) : (
-              <span style={{ color: '#64748b', fontWeight: 700 }}>Invite</span>
-            )}
-            {user ? (
-              <button onClick={logout} style={{ background: '#fff', border: '1px solid #cbd5e1', padding: '9px 13px', borderRadius: 10, fontWeight: 700 }}>
-                Deconnexion
-              </button>
-            ) : (
-              <Link href='/auth/login' style={{ background: '#1d4ed8', color: '#fff', padding: '11px 15px', borderRadius: 12, textDecoration: 'none', fontWeight: 800 }}>
+              <Link 
+                href="/auth/login" 
+                className="bg-brand-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-brand-700 shadow-premium transition-all flex items-center gap-2"
+              >
                 Connexion / Inscription
+                <ChevronRight size={16} />
               </Link>
             )}
           </div>
         </div>
 
-        <div style={{ display: 'grid', gap: 14 }}>
-          <NavGroup title='Portail public' items={siteConfig.publicSections} />
-          <NavGroup title='Demarches prioritaires' items={siteConfig.keyServices} muted />
-          <NavGroup title='Espace citoyen' items={siteConfig.citizenSections} muted />
-          <NavGroup title='Confiance' items={siteConfig.trustSections} muted />
-          <NavGroup title='Backoffice mairie' items={siteConfig.backofficeSections} muted />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 pt-2 border-t border-slate-100">
+          <NavGroup title="Portail public" items={siteConfig.publicSections} />
+          <NavGroup title="Démarches" items={siteConfig.keyServices} muted />
+          <NavGroup title="Espace citoyen" items={siteConfig.citizenSections} muted />
+          <NavGroup title="Confiance" items={siteConfig.trustSections} muted />
+          <NavGroup title="Backoffice" items={siteConfig.backofficeSections} muted />
         </div>
       </div>
     </nav>
