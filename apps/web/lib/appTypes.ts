@@ -17,6 +17,7 @@ export type SessionUser = {
   email: string;
   firstName?: string;
   lastName?: string;
+  phone?: string;
   userType?: string;
   roleCodes?: string[];
 };

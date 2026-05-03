@@ -1,9 +1,9 @@
 "use client";
 
 import { useSessionContext } from './SessionProvider';
-import { hasRole } from '../lib/roleGuards';
+import { hasRole, UserRole } from '../lib/roleGuards';
 
-export function RoleProtected({ roles, fallback, children }: { roles: string[]; fallback?: React.ReactNode; children: React.ReactNode }) {
+export function RoleProtected({ roles, fallback, children }: { roles: UserRole[]; fallback?: React.ReactNode; children: React.ReactNode }) {
   const { user, loading } = useSessionContext();
 
   if (loading) {

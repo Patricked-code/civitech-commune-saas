@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import Button from '@/components/Button';
-import Card from '@/components/Card';
-import Badge from '@/components/Badge';
+import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
+import { Badge } from '../components/ui/Badge';
 import { ArrowRight, FileText, Clock, CheckCircle } from 'lucide-react';
 
 const siteConfig = {
@@ -106,7 +106,7 @@ export default function HomePage() {
             {highlights.map((item) => {
               const Icon = item.icon;
               return (
-                <Card key={item.title} hoverable className="p-6">
+                <Card key={item.title} interactive className="p-6">
                   <div className="flex items-start gap-4">
                     <div className="flex-shrink-0">
                       <Icon className="w-8 h-8 text-primary-600" />
