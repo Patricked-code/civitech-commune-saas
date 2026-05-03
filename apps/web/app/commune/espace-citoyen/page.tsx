@@ -2,52 +2,27 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { FileText, Bell, MessageSquare, FileCheck, Plus, Filter, Menu, X, LogOut, Eye, Download, Settings } from "lucide-react";
+import { FileText, Bell, MessageSquare, FileCheck, Plus, Filter, Menu, X, LogOut, Eye, Download, Settings, Activity, Cpu, Shield, Clock } from "lucide-react";
 import { apiGet, getApiErrorMessage } from "../../../lib/api";
 import { readToken } from "../../../lib/session";
 import { ProtectedView } from "../../../components/ProtectedView";
 import { Button } from "../../../components/ui/Button";
-import { Card, CardBody } from "../../../components/ui/Card";
-import { StatCard } from "../../../components/ui/StatCard";
-import { PageHeader } from "../../../components/ui/PageHeader";
-import { Badge } from "../../../components/ui/Badge";
 import { Alert } from "../../../components/ui/Alert";
 import { SkeletonCard, SkeletonTable } from "../../../components/Skeleton";
 import type { CitizenDashboard } from "../../../lib/appTypes";
 
-const shortcuts = [
-  { href: "/commune/profil", label: "Profil", icon: <FileText className="w-5 h-5" />, text: "Gérer mes informations" },
-  { href: "/commune/notifications", label: "Notifications", icon: <Bell className="w-5 h-5" />, text: "Mes alertes" },
-  { href: "/commune/messages", label: "Messages", icon: <MessageSquare className="w-5 h-5" />, text: "Correspondances" },
-  { href: "/commune/documents", label: "Documents", icon: <FileCheck className="w-5 h-5" />, text: "Mes documents" },
-];
-
 const statusColors = {
-  draft: "primary",
-  submitted: "info",
-  qualified: "warning",
-  in_review: "warning",
-  waiting_citizen: "warning",
-  validated: "success",
-  issued: "success",
-  available: "success",
-  delivered: "success",
-  archived: "secondary",
-  rejected: "danger",
-} as const;
-
-const statusLabels = {
-  draft: "Brouillon",
-  submitted: "Soumis",
-  qualified: "Qualifié",
-  in_review: "En révision",
-  waiting_citizen: "En attente",
-  validated: "Validé",
-  issued: "Émis",
-  available: "Disponible",
-  delivered: "Livré",
-  archived: "Archivé",
-  rejected: "Rejeté",
+  draft: "bg-slate-500/20 text-slate-400 border-slate-500/30",
+  submitted: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
+  qualified: "bg-violet-500/20 text-violet-400 border-violet-500/30",
+  in_review: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+  waiting_citizen: "bg-rose-500/20 text-rose-400 border-rose-500/30",
+  validated: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+  issued: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+  available: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+  delivered: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+  archived: "bg-slate-500/20 text-slate-400 border-slate-500/30",
+  rejected: "bg-red-500/20 text-red-400 border-red-500/30",
 } as const;
 
 export default function EspaceCitoyenPage() {
@@ -85,212 +60,183 @@ export default function EspaceCitoyenPage() {
 
   return (
     <ProtectedView>
-      <main className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
-        {/* Animated Background */}
-        <div className="fixed inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-cyan-500 rounded-full mix-blend-screen filter blur-3xl opacity-20 animate-pulse"></div>
-          <div className="absolute bottom-20 right-10 w-72 h-72 bg-violet-500 rounded-full mix-blend-screen filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
+      <main className="min-h-screen bg-[#030712] text-white selection:bg-cyan-500/30">
+        {/* Cyber Background */}
+        <div className="fixed inset-0 z-0 pointer-events-none">
+          <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-cyan-500/5 rounded-full blur-[120px] animate-pulse-slow"></div>
+          <div className="absolute bottom-0 left-0 w-[50%] h-[50%] bg-violet-500/5 rounded-full blur-[120px] animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-[0.03]"></div>
         </div>
 
         {/* Sidebar */}
-        <aside className={`fixed left-0 top-0 h-screen w-64 backdrop-blur-xl bg-white/5 border-r border-white/10 transition-transform duration-300 z-40 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-          <div className="p-6 border-b border-white/10">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
-              CiviTech
-            </h1>
+        <aside className={`fixed left-0 top-0 h-screen w-72 backdrop-blur-3xl bg-black/40 border-r border-white/5 transition-all duration-500 z-50 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          <div className="p-8 mb-8">
+            <Link href="/" className="flex items-center gap-3 group">
+              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center transition-transform group-hover:rotate-12">
+                <Cpu className="w-6 h-6 text-black" />
+              </div>
+              <span className="font-black italic text-xl tracking-tighter">CIVITECH</span>
+            </Link>
           </div>
 
-          <nav className="p-4 space-y-2">
-            <NavItem icon={<FileText className="w-5 h-5" />} label="Tableau de bord" href="/commune/espace-citoyen" active />
-            <NavItem icon={<Plus className="w-5 h-5" />} label="Nouvelle démarche" href="/commune/demarches" />
-            <NavItem icon={<MessageSquare className="w-5 h-5" />} label="Messages" href="/commune/messages" />
-            <NavItem icon={<Bell className="w-5 h-5" />} label="Notifications" href="/commune/notifications" />
-            <NavItem icon={<Settings className="w-5 h-5" />} label="Paramètres" href="/commune/settings" />
+          <nav className="px-4 space-y-2">
+            <SidebarItem icon={<Activity className="w-5 h-5" />} label="DASHBOARD" href="/commune/espace-citoyen" active />
+            <SidebarItem icon={<Plus className="w-5 h-5" />} label="NOUVELLE DÉMARCHE" href="/commune/demarches" />
+            <SidebarItem icon={<MessageSquare className="w-5 h-5" />} label="MESSAGERIE" href="/commune/messages" />
+            <SidebarItem icon={<Bell className="w-5 h-5" />} label="NOTIFICATIONS" href="/commune/notifications" />
+            <SidebarItem icon={<FileCheck className="w-5 h-5" />} label="DOCUMENTS" href="/commune/documents" />
+            <SidebarItem icon={<Settings className="w-5 h-5" />} label="PARAMÈTRES" href="/commune/profil" />
           </nav>
 
-          <div className="absolute bottom-4 left-4 right-4 pt-4 border-t border-white/10">
-            <button className="w-full flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white/10 transition duration-300 text-gray-400 hover:text-white">
-              <LogOut className="w-5 h-5" />
-              <span>Déconnexion</span>
+          <div className="absolute bottom-8 left-4 right-4 pt-6 border-t border-white/5">
+            <button className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl hover:bg-red-500/10 transition-all text-slate-500 hover:text-red-400 group">
+              <LogOut className="w-5 h-5 transition-transform group-hover:-translate-x-1" />
+              <span className="text-[10px] font-black tracking-widest uppercase">Déconnexion</span>
             </button>
           </div>
         </aside>
 
         {/* Main Content */}
-        <div className={`transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-0'}`}>
+        <div className={`transition-all duration-500 ${sidebarOpen ? 'ml-72' : 'ml-0'}`}>
           {/* Top Bar */}
-          <div className="sticky top-0 z-30 backdrop-blur-xl bg-white/5 border-b border-white/10 px-6 py-4 flex items-center justify-between">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 rounded-lg hover:bg-white/10 transition duration-300 md:hidden"
-            >
-              {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-            <h2 className="text-2xl font-bold">Tableau de bord citoyen</h2>
-            <div className="flex items-center gap-4">
-              <button className="p-2 rounded-lg hover:bg-white/10 transition duration-300 relative">
-                <Bell className="w-6 h-6" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+          <header className="sticky top-0 z-40 backdrop-blur-xl bg-black/20 border-b border-white/5 px-8 py-6 flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all"
+              >
+                {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-500 to-violet-600"></div>
+              <div>
+                <h2 className="text-sm font-black tracking-[0.3em] text-slate-500 uppercase">Citoyen_Espace</h2>
+                <h1 className="text-2xl font-black italic tracking-tighter">TABLEAU_DE_BORD</h1>
+              </div>
             </div>
-          </div>
+            
+            <div className="flex items-center gap-6">
+              <div className="hidden md:flex items-center gap-3 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span className="text-[10px] font-black text-emerald-400 tracking-widest uppercase">Système_Online</span>
+              </div>
+              
+              <div className="flex items-center gap-4 pl-6 border-l border-white/10">
+                <div className="text-right hidden sm:block">
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Utilisateur</p>
+                  <p className="text-sm font-bold italic">Marie Dupont</p>
+                </div>
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500 to-violet-600 p-0.5 shadow-neon-cyan">
+                  <div className="w-full h-full rounded-[14px] bg-[#030712] flex items-center justify-center">
+                    <Shield className="w-6 h-6 text-white" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </header>
 
           {/* Content */}
-          <div className="p-6 space-y-8">
+          <div className="p-10 max-w-7xl mx-auto space-y-12 relative z-10">
             {error && (
-              <Alert variant="error" title="Erreur" dismissible className="mb-6">
+              <Alert variant="error" title="ERREUR_SYSTÈME" className="border-red-500/30 bg-red-500/10">
                 {error}
               </Alert>
             )}
 
             {isLoading ? (
-              <div className="space-y-6">
-                <div className="grid md:grid-cols-4 gap-4">
-                  {[1, 2, 3, 4].map((i) => (
-                    <SkeletonCard key={i} />
-                  ))}
+              <div className="space-y-10">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  {[1, 2, 3, 4].map((i) => <SkeletonCard key={i} />)}
                 </div>
                 <SkeletonTable />
               </div>
             ) : dashboard ? (
-              <div className="space-y-8">
-                {/* Welcome Section */}
-                <div className="relative backdrop-blur-xl bg-gradient-to-r from-cyan-500/10 to-violet-600/10 border border-white/10 rounded-2xl p-8 overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-violet-600 opacity-0 hover:opacity-5 transition duration-300"></div>
-                  <div className="relative">
-                    <h3 className="text-3xl font-bold mb-2">Bienvenue, Citoyen ! 👋</h3>
-                    <p className="text-gray-300">Gérez vos démarches et suivez vos dossiers en temps réel</p>
-                  </div>
+              <div className="space-y-16 animate-fade-in">
+                {/* Hero Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  <StatItem label="TOTAL_DOSSIERS" value={dashboard.summary.total} icon={<FileText />} color="cyan" />
+                  <StatItem label="EN_BROUILLON" value={dashboard.summary.drafts} icon={<Clock />} color="amber" />
+                  <StatItem label="SOUMIS_VALIDÉS" value={dashboard.summary.submitted} icon={<FileCheck />} color="emerald" />
+                  <StatItem label="TRAITEMENT_IA" value={dashboard.summary.inProgress} icon={<Cpu />} color="violet" />
                 </div>
 
-                {/* Statistics */}
-                <div>
-                  <h3 className="text-xl font-bold mb-4">Résumé</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    {[
-                      { label: 'Total dossiers', value: dashboard.summary.total, icon: FileText, color: 'from-cyan-500 to-blue-600' },
-                      { label: 'Brouillons', value: dashboard.summary.drafts, icon: FileText, color: 'from-yellow-500 to-orange-600' },
-                      { label: 'Soumis', value: dashboard.summary.submitted, icon: FileCheck, color: 'from-violet-500 to-purple-600' },
-                      { label: 'En cours', value: dashboard.summary.inProgress, icon: FileText, color: 'from-pink-500 to-rose-600' },
-                    ].map((stat) => {
-                      const Icon = stat.icon;
-                      return (
-                        <div key={stat.label} className="relative group backdrop-blur-xl bg-white/5 border border-white/10 rounded-xl p-6 hover:border-white/30 transition duration-300 overflow-hidden">
-                          <div className={`absolute inset-0 bg-gradient-to-r ${stat.color} opacity-0 group-hover:opacity-5 transition duration-300`}></div>
-                          <div className="relative">
-                            <div className={`w-12 h-12 rounded-lg bg-gradient-to-r ${stat.color} p-2 mb-3`}>
-                              <Icon className="w-full h-full text-white" />
-                            </div>
-                            <p className="text-sm text-gray-400 mb-1">{stat.label}</p>
-                            <p className="text-3xl font-bold">{stat.value}</p>
-                          </div>
-                        </div>
-                      );
-                    })}
+                {/* Quick Actions */}
+                <div className="flex flex-col md:flex-row items-center justify-between gap-8 p-10 rounded-[40px] bg-gradient-to-r from-cyan-500/10 to-violet-600/10 border border-white/10 relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-violet-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                  <div className="relative z-10">
+                    <h3 className="text-3xl font-black italic tracking-tighter mb-2 uppercase">Prêt pour une nouvelle démarche ?</h3>
+                    <p className="text-slate-400 font-medium">Lancez une procédure automatisée en quelques clics.</p>
                   </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex flex-wrap gap-4">
-                  <Link href="/commune/demarches">
-                    <Button variant="primary" size="lg" className="bg-gradient-to-r from-cyan-500 to-violet-600 hover:shadow-neon-cyan">
-                      <Plus className="w-5 h-5 mr-2" />
-                      Nouvelle démarche
-                    </Button>
+                  <Link href="/commune/demarches" className="relative z-10 group/btn">
+                    <button className="px-10 py-5 bg-white text-black font-black rounded-full transition-all hover:scale-105 active:scale-95 flex items-center gap-3">
+                      <Plus className="w-6 h-6" />
+                      NOUVELLE DEMANDE
+                    </button>
                   </Link>
-                  <button className="group relative px-6 py-3 font-semibold border-2 border-white/30 rounded-lg hover:border-white/50 hover:bg-white/10 transition duration-300">
-                    Voir toutes les démarches
-                  </button>
                 </div>
 
-                {/* Dossiers */}
-                <div>
-                  <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
-                    <h3 className="text-2xl font-bold">Mes dossiers</h3>
-                    <div className="flex items-center gap-2">
-                      <Filter className="w-4 h-4 text-gray-400" />
+                {/* Dossiers List */}
+                <div className="space-y-8">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+                    <h3 className="text-3xl font-black italic tracking-tighter uppercase">HISTORIQUE_FLUX</h3>
+                    <div className="flex items-center gap-4 bg-white/5 p-2 rounded-2xl border border-white/10">
+                      <Filter className="w-4 h-4 text-slate-500 ml-2" />
                       <select
                         value={filter}
                         onChange={(e) => setFilter(e.target.value)}
-                        className="backdrop-blur-xl bg-white/10 border border-white/20 text-white rounded-lg px-4 py-2 hover:border-white/30 transition duration-300"
+                        className="bg-transparent text-[10px] font-black tracking-widest text-white border-none focus:ring-0 uppercase pr-8"
                       >
-                        <option value="all" className="bg-slate-800">Tous les statuts</option>
-                        <option value="draft" className="bg-slate-800">Brouillons</option>
-                        <option value="submitted" className="bg-slate-800">Soumis</option>
-                        <option value="in_review" className="bg-slate-800">En révision</option>
-                        <option value="validated" className="bg-slate-800">Validés</option>
-                        <option value="rejected" className="bg-slate-800">Rejetés</option>
+                        <option value="all">TOUS_LES_FLUX</option>
+                        <option value="draft">BROUILLONS</option>
+                        <option value="submitted">SOUMIS</option>
+                        <option value="validated">VALIDÉS</option>
+                        <option value="rejected">REJETÉS</option>
                       </select>
                     </div>
                   </div>
 
                   {filteredDossiers.length === 0 ? (
-                    <div className="relative backdrop-blur-xl bg-white/5 border border-white/10 rounded-xl p-12 text-center">
-                      <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-400 mb-4">Aucune démarche trouvée</p>
+                    <div className="p-20 rounded-[40px] bg-white/5 border border-white/10 border-dashed text-center">
+                      <div className="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                        <Activity className="w-10 h-10 text-slate-600" />
+                      </div>
+                      <p className="text-slate-500 font-bold uppercase tracking-widest mb-6">Aucune activité détectée</p>
                       <Link href="/commune/demarches">
-                        <Button variant="primary">Commencer une démarche</Button>
+                        <Button variant="outline" className="border-white/20 hover:bg-white/10">Initialiser un flux</Button>
                       </Link>
                     </div>
                   ) : (
-                    <div className="space-y-4">
-                      {filteredDossiers.map((dossier, idx) => (
-                        <Link key={idx} href={`/commune/dossier/${dossier.reference}`}>
-                          <div className="group relative backdrop-blur-xl bg-white/5 border border-white/10 rounded-xl p-6 hover:border-white/30 transition duration-300 overflow-hidden cursor-pointer">
-                            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-violet-600 opacity-0 group-hover:opacity-5 transition duration-300"></div>
-                            <div className="relative">
-                              <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-3 mb-2 flex-wrap">
-                                    <p className="font-bold text-lg">{dossier.procedureTitle || "Démarche"}</p>
-                                    <span className="px-3 py-1 rounded-full text-sm font-semibold bg-gradient-to-r from-cyan-500 to-violet-600 text-white">
-                                      {statusLabels[dossier.status as keyof typeof statusLabels]}
-                                    </span>
-                                  </div>
-                                  <p className="text-sm text-gray-400">Réf. {dossier.reference}</p>
-                                </div>
-                                {dossier.nextStep && (
-                                  <p className="text-sm font-medium text-cyan-400">
-                                    Prochaine étape: {dossier.nextStep}
-                                  </p>
-                                )}
-                              </div>
-
-                              {/* Progress Bar */}
-                              {dossier.computedProgress !== undefined && (
-                                <div className="mb-4">
-                                  <div className="flex justify-between items-center mb-2">
-                                    <span className="text-sm text-gray-400">Progression</span>
-                                    <span className="text-sm font-semibold">{dossier.computedProgress}%</span>
-                                  </div>
-                                  <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                                    <div
-                                      className="h-full bg-gradient-to-r from-cyan-500 to-violet-600 transition-all duration-500"
-                                      style={{ width: `${dossier.computedProgress}%` }}
-                                    ></div>
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Actions */}
-                              <div className="flex gap-3">
-                                <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition duration-300 text-sm font-semibold">
-                                  <Eye className="w-4 h-4" />
-                                  Consulter
-                                </button>
-                                <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition duration-300 text-sm font-semibold">
-                                  <Download className="w-4 h-4" />
-                                  Télécharger
-                                </button>
-                                <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition duration-300 text-sm font-semibold">
-                                  <MessageSquare className="w-4 h-4" />
-                                  Messages
-                                </button>
-                              </div>
+                    <div className="grid grid-cols-1 gap-4">
+                      {filteredDossiers.map((dossier) => (
+                        <div key={dossier.id} className="group relative p-6 rounded-3xl bg-white/5 border border-white/10 hover:bg-white/[0.08] transition-all duration-300 flex flex-col md:flex-row items-center justify-between gap-6">
+                          <div className="flex items-center gap-6 w-full md:w-auto">
+                            <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-cyan-500/50 transition-colors">
+                              <FileText className="w-6 h-6 text-slate-400 group-hover:text-cyan-400" />
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-black text-slate-500 uppercase tracking-tighter mb-1">ID: {dossier.reference}</p>
+                              <h4 className="text-lg font-bold italic">{dossier.title}</h4>
                             </div>
                           </div>
-                        </Link>
+                          
+                          <div className="flex flex-wrap items-center gap-6 w-full md:w-auto justify-between md:justify-end">
+                            <div className="text-right">
+                              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Dernière_MàJ</p>
+                              <p className="text-xs font-bold">{new Date(dossier.updatedAt).toLocaleDateString()}</p>
+                            </div>
+                            
+                            <span className={`px-4 py-2 rounded-xl text-[10px] font-black tracking-widest border uppercase ${statusColors[dossier.status as keyof typeof statusColors] || statusColors.draft}`}>
+                              {dossier.status}
+                            </span>
+                            
+                            <Link href={`/commune/espace-citoyen/dossier/${dossier.id}`}>
+                              <button className="p-3 rounded-xl bg-white/5 hover:bg-white text-slate-400 hover:text-black transition-all border border-white/10">
+                                <Eye className="w-5 h-5" />
+                              </button>
+                            </Link>
+                          </div>
+                        </div>
                       ))}
                     </div>
                   )}
@@ -304,13 +250,38 @@ export default function EspaceCitoyenPage() {
   );
 }
 
-function NavItem({ icon, label, href, active = false }: { icon: React.ReactNode; label: string; href: string; active?: boolean }) {
+function SidebarItem({ icon, label, href, active = false }: { icon: React.ReactNode, label: string, href: string, active?: boolean }) {
   return (
-    <Link href={href}>
-      <div className={`flex items-center gap-3 px-4 py-3 rounded-lg transition duration-300 ${active ? 'bg-gradient-to-r from-cyan-500/20 to-violet-600/20 border border-cyan-400/30 text-cyan-400' : 'text-gray-400 hover:text-white hover:bg-white/10'}`}>
-        {icon}
-        <span className="font-medium">{label}</span>
+    <Link href={href} className="block group">
+      <div className={`flex items-center gap-4 px-6 py-4 rounded-2xl transition-all ${
+        active 
+          ? 'bg-white text-black shadow-neon-cyan' 
+          : 'text-slate-500 hover:text-white hover:bg-white/5'
+      }`}>
+        <span className={`${active ? 'text-black' : 'group-hover:text-cyan-400'} transition-colors`}>
+          {icon}
+        </span>
+        <span className="text-[10px] font-black tracking-[0.2em] uppercase">{label}</span>
       </div>
     </Link>
+  );
+}
+
+function StatItem({ label, value, icon, color }: { label: string, value: number, icon: React.ReactNode, color: 'cyan' | 'violet' | 'emerald' | 'amber' }) {
+  const colors = {
+    cyan: 'from-cyan-500 to-blue-600 shadow-neon-cyan',
+    violet: 'from-violet-500 to-purple-600 shadow-neon-violet',
+    emerald: 'from-emerald-500 to-teal-600 shadow-[0_0_15px_rgba(16,185,129,0.5)]',
+    amber: 'from-amber-500 to-orange-600 shadow-[0_0_15px_rgba(245,158,11,0.5)]',
+  };
+
+  return (
+    <div className="relative group p-8 rounded-[40px] bg-white/5 border border-white/10 hover:bg-white/[0.08] transition-all duration-500">
+      <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${colors[color]} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500`}>
+        <div className="text-white w-7 h-7">{icon}</div>
+      </div>
+      <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">{label}</p>
+      <p className="text-4xl font-black italic tracking-tighter">{value}</p>
+    </div>
   );
 }
