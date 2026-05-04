@@ -17,10 +17,10 @@ import {
   Github,
   ExternalLink
 } from 'lucide-react';
-import Navbar from '@/components/Navbar';
-import Button from '@/components/Button';
-import Card from '@/components/Card';
-import Badge from '@/components/Badge';
+import { MainNav as Navbar } from '../../components/MainNav';
+import { Button } from '../../components/ui/Button';
+import { Card } from '../../components/ui/Card';
+import { Badge } from '../../components/ui/Badge';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -55,7 +55,7 @@ export default function ReleasePage() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
             >
-              <Badge variant="success" className="mb-6 px-4 py-1.5 text-sm font-semibold tracking-wide uppercase bg-green-50 text-green-700 border border-green-100 rounded-full">
+              <Badge variant="info" className="mb-6 px-4 py-1.5 text-sm font-semibold tracking-wide uppercase">
                 🎉 Version 2.0 - Disponible Maintenant
               </Badge>
             </motion.div>
@@ -87,7 +87,7 @@ export default function ReleasePage() {
                   Voir la démo <ArrowRight size={20} />
                 </Button>
               </Link>
-              <a href="https://github.com/Patricked-code/civitech-commune-saas/tree/manus-improvements" target="_blank" rel="noopener noreferrer">
+              <a href="https://github.com/Patricked-code/civitech-commune-saas" target="_blank" rel="noopener noreferrer">
                 <Button variant="secondary" size="lg" className="rounded-full px-8 py-4 text-lg flex items-center gap-2">
                   <Github size={20} /> Code Source
                 </Button>
@@ -207,249 +207,28 @@ export default function ReleasePage() {
         </div>
       </section>
 
-      {/* Before/After Comparison */}
-      <section className="py-24 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-display font-bold text-slate-900 mb-4">
-              Avant / Après
-            </h2>
-            <p className="text-slate-600 max-w-2xl mx-auto">La transformation radicale de l'interface utilisateur.</p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Before */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <div className="space-y-4">
-                <Badge variant="warning" className="w-fit">Avant (v1.0)</Badge>
-                <Card className="overflow-hidden">
-                  <div className="bg-slate-100 p-8 text-center">
-                    <p className="text-slate-600 mb-4">Interface basique avec styles inline</p>
-                    <div className="bg-white rounded border border-slate-200 p-4 text-sm text-slate-600">
-                      Design fonctionnel mais sans sophistication
-                    </div>
-                  </div>
-                </Card>
-                <ul className="space-y-2">
-                  <li className="flex items-center gap-2 text-slate-600">
-                    <span className="text-red-500">✗</span> Styles inline répétitifs
-                  </li>
-                  <li className="flex items-center gap-2 text-slate-600">
-                    <span className="text-red-500">✗</span> Pas d'animations
-                  </li>
-                  <li className="flex items-center gap-2 text-slate-600">
-                    <span className="text-red-500">✗</span> Performance basique
-                  </li>
-                  <li className="flex items-center gap-2 text-slate-600">
-                    <span className="text-red-500">✗</span> Peu de composants réutilisables
-                  </li>
-                </ul>
-              </div>
-            </motion.div>
-
-            {/* After */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <div className="space-y-4">
-                <Badge variant="success" className="w-fit">Après (v2.0)</Badge>
-                <Card className="overflow-hidden border-2 border-brand-500 shadow-premium">
-                  <div className="bg-gradient-to-br from-brand-50 to-accent-50 p-8 text-center">
-                    <p className="text-slate-900 font-semibold mb-4">Interface ultra-premium avec Tailwind</p>
-                    <div className="bg-white rounded-2xl border border-brand-200 p-4 text-sm text-slate-600 shadow-lg">
-                      Design professionnel et sophistiqué
-                    </div>
-                  </div>
-                </Card>
-                <ul className="space-y-2">
-                  <li className="flex items-center gap-2 text-slate-600">
-                    <span className="text-green-500">✓</span> Tailwind CSS moderne
-                  </li>
-                  <li className="flex items-center gap-2 text-slate-600">
-                    <span className="text-green-500">✓</span> Animations Framer Motion
-                  </li>
-                  <li className="flex items-center gap-2 text-slate-600">
-                    <span className="text-green-500">✓</span> Performance optimale
-                  </li>
-                  <li className="flex items-center gap-2 text-slate-600">
-                    <span className="text-green-500">✓</span> Système de composants complet
-                  </li>
-                </ul>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Components Showcase */}
-      <section className="py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-display font-bold text-slate-900 mb-4">
-              📦 Composants Réutilisables
-            </h2>
-            <p className="text-slate-600 max-w-2xl mx-auto">Une bibliothèque de composants prête à l'emploi.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Button Component */}
-            <Card className="p-8">
-              <h3 className="text-lg font-bold text-slate-900 mb-4">Boutons</h3>
-              <div className="space-y-3 mb-6">
-                <Button size="sm" className="w-full">Primary Small</Button>
-                <Button variant="secondary" size="md" className="w-full">Secondary Medium</Button>
-                <Button variant="ghost" size="lg" className="w-full">Ghost Large</Button>
-              </div>
-              <p className="text-sm text-slate-600">4 variantes × 3 tailles = 12 combinaisons possibles</p>
-            </Card>
-
-            {/* Badge Component */}
-            <Card className="p-8">
-              <h3 className="text-lg font-bold text-slate-900 mb-4">Badges</h3>
-              <div className="space-y-3 mb-6">
-                <Badge variant="success">Success</Badge>
-                <Badge variant="warning">Warning</Badge>
-                <Badge variant="error">Error</Badge>
-                <Badge variant="info">Info</Badge>
-              </div>
-              <p className="text-sm text-slate-600">Parfait pour les statuts et les étiquettes</p>
-            </Card>
-
-            {/* Card Component */}
-            <Card className="p-8">
-              <h3 className="text-lg font-bold text-slate-900 mb-4">Cartes</h3>
-              <div className="mb-6">
-                <Card hoverable className="p-4 bg-brand-50">
-                  <p className="text-sm font-medium text-brand-900">Contenu interactif</p>
-                </Card>
-              </div>
-              <p className="text-sm text-slate-600">Conteneurs flexibles avec effet hover</p>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Performance Metrics */}
-      <section className="py-24 bg-brand-900 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-display font-bold mb-4">
-              ⚡ Métriques de Performance
-            </h2>
-            <p className="text-brand-300 max-w-2xl mx-auto">Des améliorations mesurables et vérifiables.</p>
-          </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              { label: 'Temps de réponse API', value: '< 100ms', improvement: '↓ 60%' },
-              { label: 'Taille des bundles', value: '↓ 45%', improvement: 'Optimisé' },
-              { label: 'Score Lighthouse', value: '95+', improvement: '↑ 30%' },
-              { label: 'Uptime garanti', value: '99.9%', improvement: 'Cluster' },
-            ].map((metric, i) => (
-              <div key={i} className="text-center">
-                <div className="text-3xl lg:text-4xl font-display font-extrabold mb-2">{metric.value}</div>
-                <div className="text-brand-300 font-medium text-sm mb-2">{metric.label}</div>
-                <div className="text-green-400 text-xs font-semibold">{metric.improvement}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Deployment Ready */}
-      <section className="py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-display font-bold text-slate-900 mb-4">
-              🚀 Prêt pour le Déploiement
-            </h2>
-            <p className="text-slate-600 max-w-2xl mx-auto">Configuration optimisée pour IONOS et autres hébergeurs.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: Code2,
-                title: 'Configuration PM2',
-                desc: 'Mode cluster activé pour utiliser tous les CPU disponibles sur IONOS'
-              },
-              {
-                icon: Shield,
-                title: 'Sécurité Production',
-                desc: 'Helmet, CORS, Rate Limiting et validation stricte activés'
-              },
-              {
-                icon: Zap,
-                title: 'Optimisations',
-                desc: 'Compression Gzip, caching intelligent et requêtes optimisées'
-              },
-            ].map((item, i) => (
-              <Card key={i} className="p-8">
-                <div className="w-12 h-12 bg-brand-50 rounded-xl flex items-center justify-center mb-4">
-                  <item.icon size={24} className="text-brand-600" />
-                </div>
-                <h3 className="text-lg font-bold text-slate-900 mb-2">{item.title}</h3>
-                <p className="text-slate-600 text-sm">{item.desc}</p>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
-      <section className="py-24 bg-slate-50">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-br from-brand-600 to-brand-800 rounded-[3rem] p-12 lg:p-20 text-center text-white relative overflow-hidden shadow-2xl">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
-            <div className="relative z-10">
-              <h2 className="text-3xl lg:text-5xl font-display font-bold mb-6">Prêt à explorer v2.0 ?</h2>
-              <p className="text-xl text-brand-100 mb-10 max-w-2xl mx-auto">Découvrez la plateforme complètement transformée avec toutes les nouvelles fonctionnalités et le design ultra-premium.</p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link href="/">
-                  <Button variant="secondary" size="lg" className="rounded-full px-10 py-4 text-lg font-bold">
-                    Voir la Démo
-                  </Button>
-                </Link>
-                <a href="https://github.com/Patricked-code/civitech-commune-saas/tree/manus-improvements" target="_blank" rel="noopener noreferrer">
-                  <Button variant="ghost" size="lg" className="text-white hover:bg-white/10 rounded-full px-10 py-4 text-lg flex items-center gap-2">
-                    <Github size={20} /> Voir le Code
-                  </Button>
-                </a>
-              </div>
-            </div>
+      <section className="py-24 bg-brand-900 text-white overflow-hidden relative">
+        <div className="absolute top-0 left-0 w-full h-full opacity-10">
+          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-brand-400 via-transparent to-transparent" />
+        </div>
+        <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
+          <h2 className="text-4xl font-display font-bold mb-6">Prêt à transformer votre commune ?</h2>
+          <p className="text-xl text-brand-100 mb-10">Rejoignez la révolution numérique avec Civitech Commune v2.0.</p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link href="/auth/login">
+              <Button size="lg" className="bg-white text-brand-900 hover:bg-brand-50 rounded-full px-10">
+                Démarrer maintenant
+              </Button>
+            </Link>
+            <Link href="/commune/contact">
+              <Button variant="ghost" size="lg" className="text-white hover:bg-white/10 rounded-full px-10">
+                Contacter un expert
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-slate-900 text-slate-400 py-12 border-t border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center text-white font-bold">C</div>
-              <span className="font-display font-bold text-white text-lg tracking-tight">Civitech Commune v2.0</span>
-            </div>
-            <div className="flex gap-8 text-sm">
-              <Link href="/" className="hover:text-white transition-colors">Accueil</Link>
-              <a href="https://github.com/Patricked-code/civitech-commune-saas" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors flex items-center gap-1">
-                GitHub <ExternalLink size={14} />
-              </a>
-              <Link href="#" className="hover:text-white transition-colors">Support</Link>
-            </div>
-            <div className="text-sm">
-              © 2026 Civitech SaaS. Tous droits réservés.
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
